@@ -15,10 +15,6 @@ export class UserController {
             next(error)
         }
     }
-
-    async getInfo(req: Request, resp: Response, next: NextFunction) {
-        resp.status(200).json({message: "Not implemented"})
-    }
 }
 
 export default new UserController(userService)

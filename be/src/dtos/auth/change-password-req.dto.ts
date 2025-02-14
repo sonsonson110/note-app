@@ -1,4 +1,4 @@
-import {IsString, MaxLength, MinLength, ValidateIf} from "class-validator";
+import {IsString, MaxLength, MinLength} from "class-validator";
 
 export class ChangePasswordReqDto {
     @IsString()

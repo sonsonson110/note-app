@@ -1,8 +1,9 @@
 import {NextFunction, Request, Response} from 'express';
 import jwtHelperUtil, {AccessJwtPayload} from "../utils/jwt-helper.util";
 import jwt from "jsonwebtoken";
-import { PrismaClient } from '@prisma/client';
-import {ServiceError, UnauthorizedError,} from "../types/errors.type";
+import {PrismaClient} from '@prisma/client';
+import {UnauthorizedError,} from "../types/errors.type";
+
 const prisma = new PrismaClient()
 
 declare global {
