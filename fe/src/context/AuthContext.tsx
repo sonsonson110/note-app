@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 interface User {
   id: string
@@ -16,15 +17,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const navigate = useNavigate()
 
   const login = (token: string) => {
-    localStorage.setItem('acessToken', token)
+    localStorage.setItem('accessToken', token)
     setUser(user)
+    navigate('/')
   }
 
   const logout = () => {
-    localStorage.removeItem('token')
+    localStorage.removeItem('accessToken')
     setUser(null)
+    navigate('/login')
   }
 
   return (
