@@ -26,9 +26,3 @@ export class NotFoundError extends ServiceError {
         super(message, 'NOT_FOUND', 404, details)
     }
 }
-
-export class ConflictError extends ServiceError {
-    constructor(message: string, details?: any) {
-        super(message, 'CONFLICT_ERROR', 409, details)
-    }
-}

@@ -1,7 +1,7 @@
 import {BaseService} from "./abstractions/base.service";
 import {RegisterReqDto} from "../dtos/auth/register-req.dto";
 import {Prisma} from "@prisma/client";
-import {ConflictError, ServiceError} from "../types/errors.type";
+import {ServiceError, ValidationError} from "../types/errors.type";
 import {PasswordHashHelper} from "../utils/password-hash-helper.util";
 
 export class UserService extends BaseService {
@@ -26,7 +26,7 @@ export class UserService extends BaseService {
             where: whereSameUsernameOrEmail
         })
         if (usernameOrEmailPassed != 0) {
-            throw new ConflictError("Username or email has been taken")
+            throw new ValidationError("Username or email has been taken")
         }
         // Persist
         const passwordHash = await this.passwordHashHelper.generate(dto.password)

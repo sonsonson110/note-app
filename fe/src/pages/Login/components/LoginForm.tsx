@@ -1,5 +1,5 @@
 // components/LoginForm.tsx
-import { Stack } from '@mui/material'
+import { Stack, Typography } from '@mui/material'
 import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'
 import { FormEvent } from 'react'
@@ -40,6 +40,12 @@ export function LoginForm({ formData, errors, onSubmit, onChange }: LoginFormPro
           onChange={onChange}
           required
         />
+
+        {errors.submit && (
+          <Typography variant='body1' color='error'>
+            {errors.submit}
+          </Typography>
+        )}
 
         <Button type='submit' variant='contained' fullWidth>
           Log In

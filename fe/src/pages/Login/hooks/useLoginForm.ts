@@ -1,8 +1,13 @@
-// hooks/useLoginForm.ts
 import { FormEvent, useState } from 'react'
+import { useAuth } from '../../../context/AuthContext'
+import { VALIDATION } from '../constants'
 import { LoginFormData, LoginFormErrors } from '../types'
+import { authApi } from '../../../services/auth/auth'
+import { httpErrorHandler } from '../../../handlers/httpErrorHandler'
+import { ApiError } from '../../../types/apiError'
 
 export function useLoginForm() {
+  const { login } = useAuth()
   const [formData, setFormData] = useState<LoginFormData>({
     username: '',
     password: ''
@@ -10,21 +15,34 @@ export function useLoginForm() {
   const [errors, setErrors] = useState<LoginFormErrors>({})
   const [loading, setLoading] = useState(false)
 
+  const setFieldError = (field: keyof LoginFormErrors) => (error: string) => {
+    setErrors((prev) => ({
+      ...prev,
+      [field]: error
+    }))
+  }
+
   const validateForm = (): boolean => {
     const newErrors: LoginFormErrors = {}
 
     if (!formData.username.trim()) {
       newErrors.username = 'Username is required'
-    } else if (formData.username.trim().length <= 6) {
+    } else if (
+      formData.username.trim().length < VALIDATION.MIN_USERNAME_LENGTH ||
+      formData.password.length > VALIDATION.MAX_USERNAME_LENGTH
+    ) {
       newErrors.username = 'Please enter a valid username'
     }
 
     if (!formData.password) {
       newErrors.password = 'Password is required'
-    } else if (formData.password.length <= 6) {
+    } else if (
+      formData.password.length < VALIDATION.MIN_PASSWORD_LENGTH ||
+      formData.password.length > VALIDATION.MAX_PASSWORD_LENGTH
+    ) {
       newErrors.password = 'Please enter a valid password'
     }
-    
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -34,14 +52,25 @@ export function useLoginForm() {
     if (validateForm()) {
       try {
         setLoading(true)
-        // Your API call here
-        setTimeout(() => {
-          setLoading(false)
-        }, 3000)
-      } catch (error) {
-        setErrors({
-          submit: error instanceof Error ? error.message : 'An error occurred'
-        })
+        const loginResp = await authApi.login({ username: formData.username, password: formData.password })
+        login(loginResp.accessToken)
+      } catch (error: any) {
+        if (error.response) {
+          const { status, data } = error.response
+          console.log(data)
+          httpErrorHandler({
+            statusCode: status,
+            errorObject: data as ApiError,
+            errorKeys: ['username', 'password'],
+            setFieldErrors: {
+              username: setFieldError('username'),
+              password: setFieldError('password')
+            }
+          })
+          setErrors((pre) => ({ ...pre, submit: data.error.message }))
+        }
+      } finally {
+        setLoading(false)
       }
     }
   }
@@ -52,7 +81,7 @@ export function useLoginForm() {
       ...prev,
       [name]: value
     }))
-    
+
     if (errors[name as keyof LoginFormErrors]) {
       setErrors((prev) => ({
         ...prev,

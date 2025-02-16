@@ -9,7 +9,7 @@ export default function LoginPage() {
   return (
     <Container maxWidth='xs'>
       <Backdrop sx={(theme) => ({ color: '#ffffff', zIndex: theme.zIndex.drawer + 1 })} open={loading}>
-        <Typography variant='h5'>Logging you in...</Typography>
+        <Typography variant='h4' sx={{fontWeight: 600}}>Sending you in...</Typography>
       </Backdrop>
 
       <Stack spacing={4} sx={{ mt: 5, alignItems: 'center' }}>
