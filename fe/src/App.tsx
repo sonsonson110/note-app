@@ -2,8 +2,8 @@ import { AuthProvider } from './context/AuthContext'
 import LoginPage from './pages/Login/LoginPage'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { NoteListPage } from './pages/NoteList/NoteListPage'
-import { SignupPage } from './pages/Signup/SignupPage'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import SignupPage from './pages/Signup/SignupPage'
 
 function App() {
   return (

@@ -49,8 +49,7 @@ export class JwtHelper {
             ...user
         }
         return jwt.sign(payload, this.accessTokenSecret, {
-            // expiresIn: 60 * 5, // 5 minutes
-            expiresIn: 5,   // test
+            expiresIn: 60 * 15, // 15 minutes
             algorithm: 'HS256'
         })
     }
@@ -67,8 +66,7 @@ export class JwtHelper {
         return jwt.sign(
             payload,
             this.refreshTokenSecret,
-            // { expiresIn: '4d' }
-            { expiresIn: 7 }
+            { expiresIn: '4d' }
         );
     }
 

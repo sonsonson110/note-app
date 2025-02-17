@@ -8,8 +8,7 @@ export const authApi = {
       return data
     },
     logout: async () => {
-      const { data } = await axiosInstance.post('api/auth/logout')
-      return data
+      await axiosInstance.post('api/auth/logout')
     },
     refreshToken: async (): Promise<LoginRespDto> => {
       const { data } = await axiosInstance.post('api/auth/refresh')
