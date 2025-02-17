@@ -23,21 +23,23 @@ export default function TemporaryDrawer({ drawerOpen, onClose }: TemporaryDrawer
   ]
 
   return (
-    <Drawer open={drawerOpen} onClose={onClose}>
-      <Box sx={{ width: 230 }} role='presentation'>
-        <Toolbar variant='dense' />
-        <Divider/>
-        <List>
-          {menuItems.map((item) => (
-            <ListItem key={item.text} disablePadding>
-              <ListItemButton onClick={item.onClick}>
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </Box>
-    </Drawer>
+    <nav>
+        <Drawer open={drawerOpen} onClose={onClose}>
+          <Box sx={{ width: 230 }} role='presentation'>
+            <Toolbar variant='dense' />
+            <Divider/>
+            <List>
+              {menuItems.map((item) => (
+                <ListItem key={item.text} disablePadding>
+                  <ListItemButton onClick={item.onClick}>
+                    <ListItemIcon>{item.icon}</ListItemIcon>
+                    <ListItemText primary={item.text} />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        </Drawer>
+    </nav>
   )
 }

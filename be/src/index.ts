@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import {errorHandler} from "./middlewares/error-handler.middleware";
 import userRoutes from "./routes/user.route"
 import authRoutes from "./routes/auth.route"
+import notebookRoutes from "./routes/notebook.route";
 
 
 dotenv.config();
@@ -26,6 +27,7 @@ app.use(express.json())
 
 app.use('/api/users', userRoutes)
 app.use('/api/auth', authRoutes)
+app.use('/api/notebooks', notebookRoutes)
 
 app.use(errorHandler)
 

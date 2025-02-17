@@ -56,10 +56,10 @@ export class AuthService extends BaseService {
             payload = this.jwtHelper.verifyRefreshToken(refreshToken);
         } catch (err) {
             if (err instanceof jwt.TokenExpiredError) {
-                throw new UnauthorizedError('Token expired')
+                throw new UnauthorizedError('Session expired')
             }
             if (err instanceof jwt.JsonWebTokenError) {
-                throw new UnauthorizedError('Invalid token')
+                throw new UnauthorizedError('Invalid session')
             }
         }
         // Check if token exists and is not revoked

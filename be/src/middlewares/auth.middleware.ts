@@ -42,7 +42,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
         if (err instanceof jwt.TokenExpiredError) {
             definedError = new UnauthorizedError('Token expired')
         } else if (err instanceof jwt.JsonWebTokenError) {
-            definedError = new UnauthorizedError('Invalid token')
+            definedError = new UnauthorizedError('Invalid session')
         } else {
             console.log(err)
             definedError = new Error()

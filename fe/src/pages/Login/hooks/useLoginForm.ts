@@ -1,10 +1,9 @@
 import { FormEvent, useState } from 'react'
 import { useAuth } from '../../../context/AuthContext'
-import { VALIDATION } from '../constants'
-import { LoginFormData, LoginFormErrors } from '../types'
-import { authApi } from '../../../services/auth/auth'
 import { httpErrorHandler } from '../../../handlers/httpErrorHandler'
 import { ApiError } from '../../../types/apiError'
+import { VALIDATION } from '../constants'
+import { LoginFormData, LoginFormErrors } from '../types'
 
 export function useLoginForm() {
   const { login } = useAuth()
@@ -52,12 +51,10 @@ export function useLoginForm() {
     if (validateForm()) {
       try {
         setLoading(true)
-        const loginResp = await authApi.login({ username: formData.username, password: formData.password })
-        login(loginResp.accessToken)
+        await login({ username: formData.username, password: formData.password })
       } catch (error: any) {
         if (error.response) {
           const { status, data } = error.response
-          console.log(data)
           httpErrorHandler({
             statusCode: status,
             errorObject: data as ApiError,

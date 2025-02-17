@@ -1,6 +1,6 @@
 import { axiosInstance } from '../../lib/axios'
-import { LoginReqDto } from '../dtos/login-req.dto'
-import { LoginRespDto } from '../dtos/login-resp.dto'
+import { LoginReqDto } from './dto/loginReqDto'
+import { LoginRespDto } from './dto/loginRespDto'
 
 export const authApi = {
     login: async (dto: LoginReqDto): Promise<LoginRespDto> => {

@@ -66,9 +66,7 @@ const handleBadRequest = (
 const handleUnauthorized = (context?: { setIsAuthenticated: (value: boolean) => void }) => {
   // Show an error toast to notify the user about token expiration
   // Clear any stored authentication data
-  localStorage.removeItem('token')
+  localStorage.removeItem('accessToken')
   // Update the authentication state in the context
   context?.setIsAuthenticated(false)
-  // Navigate user to login page
-  window.location.href = '/login'
 }
