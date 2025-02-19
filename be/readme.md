@@ -37,73 +37,78 @@
    - Automated testing setup
 
 ## Database Schema
-```sql
--- Users table
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+```mermaid
+erDiagram
+    Users {
+        id SERIAL PK
+        username VARCHAR(50)
+        email VARCHAR(100)
+        password_hash VARCHAR(255)
+        created_at TIMESTAMP
+    }
 
--- Notebooks table
-CREATE TABLE notebooks (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    Notes {
+        id SERIAL PK
+        title VARCHAR(200)
+        content TEXT
+        user_id INTEGER FK
+        is_public BOOLEAN
+        version INTEGER
+        created_at TIMESTAMP
+        updated_at TIMESTAMP
+    }
 
--- Notes table
-CREATE TABLE notes (
-    id SERIAL PRIMARY KEY,
-    notebook_id INTEGER REFERENCES notebooks(id),
-    user_id INTEGER REFERENCES users(id),
-    title VARCHAR(200) NOT NULL,
-    content TEXT,
-    is_public BOOLEAN DEFAULT false,
-    version INTEGER DEFAULT 1,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    Notebooks {
+        id SERIAL PK
+        user_id INTEGER FK
+        name VARCHAR(100)
+        description TEXT
+        created_at TIMESTAMP
+    }
 
--- Tags table
-CREATE TABLE tags (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    user_id INTEGER REFERENCES users(id)
-);
+    Tags {
+        id SERIAL PK
+        name VARCHAR(50)
+        user_id INTEGER FK
+    }
 
--- Note_Tags junction table
-CREATE TABLE note_tags (
-    note_id INTEGER REFERENCES notes(id),
-    tag_id INTEGER REFERENCES tags(id),
-    PRIMARY KEY (note_id, tag_id)
-);
+    NotebookNotes {
+        notebook_id INTEGER FK
+        note_id INTEGER FK
+    }
 
--- Shared_Notes table
-CREATE TABLE shared_notes (
-    note_id INTEGER REFERENCES notes(id),
-    shared_with_user_id INTEGER REFERENCES users(id),
-    permission VARCHAR(20) DEFAULT 'read',
-    shared_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (note_id, shared_with_user_id)
-);
+    NoteTags {
+        note_id INTEGER FK
+        tag_id INTEGER FK
+    }
+
+    SharedNotes {
+        note_id INTEGER FK
+        shared_with_user_id INTEGER FK
+        permission VARCHAR(20)
+        shared_at TIMESTAMP
+    }
+
+    Users ||--o{ Notes : "creates"
+    Users ||--o{ Notebooks : "owns"
+    Users ||--o{ Tags : "creates"
+    Notes ||--o{ NoteTags : "has"
+    Tags ||--o{ NoteTags : "used_in"
+    Notes ||--o{ SharedNotes : "shared_as"
+    Users ||--o{ SharedNotes : "has_access_to"
+    Notes ||--o{ NotebookNotes : "appears_in"
+    Notebooks ||--o{ NotebookNotes : "contains"
 ```
 
 ## API Endpoints
 ```
 Authentication:
-POST /api/auth/register
 POST /api/auth/login
-POST /api/auth/refresh-token
+PUT /api/auth/password
+POST /api/auth/refresh
 
 Users:
-GET /api/users/profile
-PUT /api/users/profile
-PUT /api/users/password
+POST /api/users
 
 Notebooks:
 GET /api/notebooks
@@ -116,7 +121,6 @@ Notes:
 GET /api/notes
 POST /api/notes
 GET /api/notes/:id
-PUT /api/notes/:id
 DELETE /api/notes/:id
 GET /api/notes/:id/history
 POST /api/notes/:id/share
@@ -127,3 +131,6 @@ GET /api/tags
 POST /api/tags
 DELETE /api/tags/:id
 ```
+
+### Ref
+- Set up express js: https://blog.logrocket.com/how-to-set-up-node-typescript-express/

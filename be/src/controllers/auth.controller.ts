@@ -43,7 +43,7 @@ export class AuthController {
             const refreshToken = req.cookies.refreshToken
             await this.authService.logout(refreshToken)
             resp.clearCookie('refreshToken')
-            resp.status(200).json({message: 'Logged out successfully'})
+            resp.status(200).json({message: 'Logout successfully'})
         } catch (error) {
             next(error)
         }

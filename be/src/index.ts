@@ -3,11 +3,13 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import 'reflect-metadata';
 
 import {errorHandler} from "./middlewares/error-handler.middleware";
 import userRoutes from "./routes/user.route"
 import authRoutes from "./routes/auth.route"
 import notebookRoutes from "./routes/notebook.route";
+import noteRoutes from "./routes/note.route";
 
 
 dotenv.config();
@@ -28,6 +30,7 @@ app.use(express.json())
 app.use('/api/users', userRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/notebooks', notebookRoutes)
+app.use('/api/notes', noteRoutes)
 
 app.use(errorHandler)
 

@@ -45,9 +45,9 @@ Content-Type: application/json
     client.global.set("newRandomPassword", generateRandomPassword());
 %}
 
-POST http://{{host}}/api
+PUT http://{{host}}/api
     /auth
-    /change-password
+    /password
 Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 

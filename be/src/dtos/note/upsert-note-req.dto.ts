@@ -1,0 +1,29 @@
+import { Expose } from "class-transformer";
+import {IsBoolean, IsInt, IsOptional, IsString, IsUUID, MaxLength, Min} from "class-validator";
+
+export class UpsertNoteReqDto {
+    @Expose()
+    @IsOptional()
+    @IsUUID()
+    id?: string
+
+    @IsString()
+    @Expose()
+    @MaxLength(300)
+    title: string = ''
+
+    @IsString()
+    @Expose()
+    content: string = ''
+
+    @IsOptional()
+    @IsBoolean()
+    @Expose()
+    isPublic: boolean = false
+
+    @IsOptional()
+    @Expose()
+    @IsInt()
+    @Min(1)
+    version: number = 1
+}

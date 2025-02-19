@@ -1,0 +1,54 @@
+### POST login with username and password
+POST http://{{host}}/api
+    /auth
+    /login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+> {%
+    client.global.set("accessToken", response.body.accessToken);
+%}
+
+### GET user notes
+GET http://{{host}}/api
+    /notes
+    ?page=1
+    &limit=3
+Authorization: Bearer {{accessToken}}
+
+### POST add a single note
+POST http://{{host}}/api
+    /notes
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "id": null,
+  "title": "note 1",
+  "content": ""
+}
+
+### POST update a single note
+POST http://{{host}}/api
+    /notes
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "id": "a1b67322-44f9-4077-b631-1a414c5786dc",
+  "title": "note 1",
+  "content": "ngon luôn",
+  "version": 2
+}
+
+### DELETE delete a single note
+DELETE http://{{host}}/api
+    /notes
+    /a1b67322-44f9-4077-b631-1a414c5786dc
+Authorization: Bearer {{accessToken}}
+
+###
