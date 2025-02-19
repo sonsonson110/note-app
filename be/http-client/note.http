@@ -48,7 +48,7 @@ Authorization: Bearer {{accessToken}}
 ### DELETE delete a single note
 DELETE http://{{host}}/api
     /notes
-    /a1b67322-44f9-4077-b631-1a414c5786dc
+    /a1b67322-44f9-4077--1a414c5786dc
 Authorization: Bearer {{accessToken}}
 
 ###
