@@ -1,4 +1,4 @@
-export class NoteDto {
+export class NoteDetailRespDto {
     id!: string
     title!: string
     content!: string

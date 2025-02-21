@@ -12,7 +12,15 @@ router.post(
     [authenticateToken, validationMiddleware(UpsertNoteReqDto)],
     noteController.upsertNote.bind(noteController)
 )
+
 router.get('/', authenticateToken, noteController.getNotes.bind(noteController))
+
+router.get(
+    '/:noteId',
+    [validateUUIDParams('noteId'), authenticateToken],
+    noteController.getNote.bind(noteController)
+)
+
 router.delete(
     '/:noteId',
     [validateUUIDParams('noteId'), authenticateToken],

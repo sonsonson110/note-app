@@ -37,6 +37,16 @@ export class NoteController {
         }
     }
 
+    async getNote(req: Request, resp: Response, next: NextFunction) {
+        try {
+            const {noteId} = req.params
+            const result = await this.noteService.getNote(noteId, req.user!)
+            resp.status(200).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
+
     async deleteNote(req: Request, resp: Response, next: NextFunction) {
         try {
             const { noteId } = req.params

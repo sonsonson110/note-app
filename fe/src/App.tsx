@@ -1,9 +1,10 @@
-import { AuthProvider } from './context/AuthContext'
-import LoginPage from './pages/Login/LoginPage'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { NoteListPage } from './pages/NoteList/NoteListPage'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import NoteLayout from './components/NoteLayout'
 import { ProtectedRoute } from './components/ProtectedRoute'
-import SignupPage from './pages/Signup/SignupPage'
+import { PublicRoute } from './components/PublicRoute'
+import { AuthProvider } from './context/AuthContext'
+import LoginPage from './features/Login/LoginPage'
+import SignupPage from './features/Signup/SignupPage'
 
 function App() {
   return (
@@ -12,11 +13,16 @@ function App() {
         <Routes>
           {/* Protected routes */}
           <Route element={<ProtectedRoute />}>
-            <Route path='/' element={<NoteListPage />} />{' '}
+            <Route path='/notes' element={<NoteLayout />}>
+              <Route path=':noteId' element={<NoteLayout />} />
+            </Route>
+            <Route path='/' element={<Navigate to='/notes' replace />} />
           </Route>
-          {/* Public routes */}
-          <Route path='/login' element={<LoginPage />} />
-          <Route path='/signup' element={<SignupPage />} />
+          {/* Public routes - only accessible when not authenticated */}
+          <Route element={<PublicRoute />}>
+            <Route path='/login' element={<LoginPage />} />
+            <Route path='/signup' element={<SignupPage />} />
+          </Route>
         </Routes>
       </AuthProvider>
     </BrowserRouter>

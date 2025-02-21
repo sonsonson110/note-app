@@ -1,8 +1,7 @@
 import { createContext, useCallback, useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { User } from '../types/user'
-import { JWTPayload } from '../types/jwtPayload'
-import { authApi } from '../services/auth/auth'
+import { JWTPayload, User } from '../types/jwtPayload'
+import { authApi } from '../services/auth/authApi'
 import { LoginReqDto } from '../services/auth/dto/loginReqDto'
 
 interface AuthContextType {

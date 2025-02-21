@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import { env } from '../env'
-import { authApi } from '../services/auth/auth'
+import { authApi } from '../services/auth/authApi'
 
 export const axiosInstance = axios.create({
   baseURL: env.API_URL,

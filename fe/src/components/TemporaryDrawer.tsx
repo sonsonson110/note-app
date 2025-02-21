@@ -28,7 +28,7 @@ export default function TemporaryDrawer({ drawerOpen, onClose }: TemporaryDrawer
           <Box sx={{ width: 230 }} role='presentation'>
             <Toolbar variant='dense' />
             <Divider/>
-            <List>
+            <List sx={{p: 0}}>
               {menuItems.map((item) => (
                 <ListItem key={item.text} disablePadding>
                   <ListItemButton onClick={item.onClick}>
