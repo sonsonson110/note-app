@@ -8,6 +8,8 @@ import { NoteListItemDto } from '../../services/note/dto/noteListItemDto'
 import { noteApi } from '../../services/note/noteApi'
 import { ApiError } from '../../types/apiError'
 import { PageMetaDto } from '../../types/pageDto'
+import NoStyledTextField from '../../components/NoStyledTextField'
+import { Search } from '@mui/icons-material'
 
 interface NoteItemProps {
   item: NoteListItemDto
@@ -17,10 +19,7 @@ interface NoteItemProps {
 
 const NoteItem = memo(({ item, isSelected, onNoteClick }: NoteItemProps) => (
   <>
-    <ListItem
-      disablePadding
-      sx={{ height: '56px' }}
-    >
+    <ListItem disablePadding sx={{ height: '56px' }}>
       <ListItemButton sx={{ height: '100%' }} onClick={() => onNoteClick(item.id)}>
         <ListItemText
           primary={item.title || 'Untitled'}
@@ -36,7 +35,7 @@ const NoteItem = memo(({ item, isSelected, onNoteClick }: NoteItemProps) => (
               WebkitLineClamp: 1,
               WebkitBoxOrient: 'vertical',
               lineHeight: '20px',
-              fontSize: '0.75rem',
+              fontSize: '0.75rem'
             }
           }}
         />
@@ -50,6 +49,7 @@ NoteItem.displayName = 'NoteItem'
 
 export function NoteList({}) {
   const [loading, setLoading] = useState(false)
+  const [searchText, setSearchText] = useState('')
   const [noteListItems, setNoteListItem] = useState<NoteListItemDto[]>([])
   const [error, setError] = useState('')
   const pageMetaRef = useRef<PageMetaDto>(null)
@@ -103,18 +103,53 @@ export function NoteList({}) {
       <MainAppBar />
       {error && <Typography sx={{ p: 2, color: 'error.main' }}>{error}</Typography>}
       {loading ? (
-        <Typography sx={{p: 1}}>Loading...</Typography>
+        <Typography sx={{ p: 1 }}>Loading...</Typography>
       ) : (
-        <List sx={{ flexGrow: 1, overflow: 'auto', p: 0 }}>
-          {noteListItems.map((item) => (
-            <NoteItem
-              key={item.id}
-              item={item}
-              isSelected={noteId === item.id}
-              onNoteClick={() => handleNoteClick(item.id)}
-            />
-          ))}
-        </List>
+        <Box
+          sx={{
+            flexGrow: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }}
+        >
+          <NoStyledTextField
+            value={searchText}
+            onValueChange={(newValue) => {
+              setSearchText(newValue)
+            }}
+            placeholder='Search all notes'
+            containerSx={{ px: 2, py: 1, borderBottom: 1, borderColor: 'divider' }}
+            sx={{ typography: 'body2' }}
+            leadingIcon={Search}
+          />
+          <List
+            sx={{
+              flexGrow: 1,
+              overflowY: 'auto',
+              p: 0,
+              '&::-webkit-scrollbar': {
+                width: '6px' // Thin scrollbar
+              },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: 'rgba(0, 0, 0, 0.2)', // Light color thumb
+                borderRadius: '3px'
+              },
+              '&::-webkit-scrollbar-track': {
+                backgroundColor: 'rgba(0, 0, 0, 0.05)' // Lighter track
+              }
+            }}
+          >
+            {noteListItems.map((item) => (
+              <NoteItem
+                key={item.id}
+                item={item}
+                isSelected={noteId === item.id}
+                onNoteClick={() => handleNoteClick(item.id)}
+              />
+            ))}
+          </List>
+        </Box>
       )}
     </Box>
   )

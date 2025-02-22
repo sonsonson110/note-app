@@ -10,13 +10,25 @@ import { NoteDetailRespDto } from '../../services/note/dto/noteDetailRespDto'
 import { noteApi } from '../../services/note/noteApi'
 import { ApiError } from '../../types/apiError'
 import { useNavigate } from 'react-router-dom'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import StartIcon from '@mui/icons-material/Start'
+import NoStyledTextField from '../../components/NoStyledTextField'
+import NoteInfoDialog from './components/NoteInfoDialog'
 
-export default function NoteDetail({ noteId }: { noteId?: string | null }) {
+interface NoteDetailProps {
+  noteId?: string | null
+  isNoteListVisible: boolean
+  onNoteListToggle: () => void
+}
+
+export default function NoteDetail({ noteId, isNoteListVisible, onNoteListToggle }: NoteDetailProps) {
   const { setIsAuthenticated } = useAuth()
   const { isMobile } = useViewport()
   const navigate = useNavigate()
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [isDialogVisible, setIsDialogVisible] = useState(false)
+  const noteLoaded = noteId && !loading && !error
   const [note, setNote] = useState<NoteDetailRespDto>({
     id: '',
     title: '',
@@ -58,25 +70,54 @@ export default function NoteDetail({ noteId }: { noteId?: string | null }) {
   }, [noteId])
 
   return (
-    <Box sx={{ height: '100%' }}>
-      <AppBar position='static' elevation={0}>
-        <Toolbar variant='dense'>
-          {isMobile && (
-            <IconButton edge='start' color='inherit' aria-label='menu' sx={{ mr: 2 }} onClick={handleBack}>
-              <FirstPageOutlinedIcon />
-            </IconButton>
-          )}
-          <Box sx={{ flexGrow: 1 }} />
-          <IconButton color='inherit' edge='end' sx={{ mr: 0.75 }}>
-            <InfoIcon />
-          </IconButton>
-          <IconButton color='inherit' edge='end'>
-            <ExpandCircleDownIcon />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
-      <Box sx={{ p: 2 }}>
-        {loading || error || !noteId ? (
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
+      {isDialogVisible && <NoteInfoDialog note={note} onClose={() => setIsDialogVisible(false)} />}
+
+      {noteId && (
+        <AppBar position='sticky' elevation={0}>
+          <Toolbar variant='dense'>
+            {isMobile ? (
+              <IconButton edge='start' color='inherit' aria-label='menu' sx={{ mr: 2 }} onClick={handleBack}>
+                <ArrowBackIcon />
+              </IconButton>
+            ) : (
+              <IconButton edge='start' color='inherit' aria-label='menu' sx={{ mr: 2 }} onClick={onNoteListToggle}>
+                {isNoteListVisible ? <FirstPageOutlinedIcon /> : <StartIcon />}
+              </IconButton>
+            )}
+            <Box sx={{ flexGrow: 1 }} />
+            {noteLoaded && (
+              <>
+                <IconButton color='inherit' edge='end' sx={{ mr: 0.75 }} onClick={() => setIsDialogVisible(true)}>
+                  <InfoIcon />
+                </IconButton>
+                <IconButton color='inherit' edge='end'>
+                  <ExpandCircleDownIcon />
+                </IconButton>
+              </>
+            )}
+          </Toolbar>
+        </AppBar>
+      )}
+      <Box
+        sx={{
+          flexGrow: 1,
+          overflowY: 'auto',
+          p: 2,
+          pl: 4,
+          '&::-webkit-scrollbar': {
+            width: '6px' // Thin scrollbar
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'rgba(0, 0, 0, 0.2)', // Light color thumb
+            borderRadius: '3px'
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: 'rgba(0, 0, 0, 0.05)' // Lighter track
+          }
+        }}
+      >
+        {!noteLoaded ? (
           <Box
             sx={{
               height: '100%',
@@ -90,12 +131,24 @@ export default function NoteDetail({ noteId }: { noteId?: string | null }) {
             {error && <Typography color='text.secondary'>{error}</Typography>}
           </Box>
         ) : (
-          <>
-            <Typography variant='h4' sx={{ mb: 2 }}>
-              {note.title}
-            </Typography>
-            <Typography>{note.content}</Typography>
-          </>
+          <Box>
+            <NoStyledTextField
+              placeholder='Put a note title...'
+              value={note.title}
+              onValueChange={(val) => {
+                setNote((prev) => ({ ...prev, title: val }))
+              }}
+              sx={{ typography: 'h5' }}
+            />
+            <NoStyledTextField
+              multiline
+              placeholder='Write some content...'
+              value={note.content}
+              onValueChange={(val) => {
+                setNote((prev) => ({ ...prev, content: val }))
+              }}
+            />
+          </Box>
         )}
       </Box>
     </Box>
