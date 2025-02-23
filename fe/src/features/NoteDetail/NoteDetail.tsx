@@ -1,18 +1,29 @@
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import CloudDoneOutlinedIcon from '@mui/icons-material/CloudDoneOutlined'
+import CloudOffOutlinedIcon from '@mui/icons-material/CloudOffOutlined'
 import ExpandCircleDownIcon from '@mui/icons-material/ExpandCircleDown'
 import FirstPageOutlinedIcon from '@mui/icons-material/FirstPageOutlined'
 import InfoIcon from '@mui/icons-material/Info'
-import { AppBar, Box, IconButton, Toolbar, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
-import { useAuth } from '../../context/AuthContext'
-import { httpErrorHandler } from '../../handlers/httpErrorHandler'
-import { useViewport } from '../../hooks/useViewport'
-import { NoteDetailRespDto } from '../../services/note/dto/noteDetailRespDto'
-import { noteApi } from '../../services/note/noteApi'
-import { ApiError } from '../../types/apiError'
-import { useNavigate } from 'react-router-dom'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import StartIcon from '@mui/icons-material/Start'
+import {
+  AppBar,
+  Box,
+  Checkbox,
+  CircularProgress,
+  Divider,
+  IconButton,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Toolbar,
+  Typography
+} from '@mui/material'
+import { format } from 'date-fns'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import NoStyledTextField from '../../components/NoStyledTextField'
+import { useNotes } from '../../context/NoteContext'
+import { useViewport } from '../../hooks/useViewport'
 import NoteInfoDialog from './components/NoteInfoDialog'
 
 interface NoteDetailProps {
@@ -22,62 +33,58 @@ interface NoteDetailProps {
 }
 
 export default function NoteDetail({ noteId, isNoteListVisible, onNoteListToggle }: NoteDetailProps) {
-  const { setIsAuthenticated } = useAuth()
+  const {
+    currentNote,
+    detailLoading,
+    noteSyncing,
+    detailError,
+    syncError,
+    loadCurrentNote,
+    deleteNote,
+    updateCurrentNote
+  } = useNotes()
+
   const { isMobile } = useViewport()
   const navigate = useNavigate()
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(true)
   const [isDialogVisible, setIsDialogVisible] = useState(false)
-  const noteLoaded = noteId && !loading && !error
-  const [note, setNote] = useState<NoteDetailRespDto>({
-    id: '',
-    title: '',
-    content: '',
-    isPublic: false,
-    version: 1,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  })
+  const noteLoaded = noteId && !detailLoading && !detailError
 
-  const handleBack = () => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const open = Boolean(anchorEl)
+  const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget)
+  }
+  const handleMenuClose = () => {
+    setAnchorEl(null)
+  }
+
+  const handleAppBarBack = () => {
+    navigate('/notes')
+  }
+
+  const handleNoteDelete = async () => {
+    handleMenuClose()
+    if (noteId) {
+      await deleteNote(noteId)
+    }
     navigate('/notes')
   }
 
   useEffect(() => {
-    setLoading(true)
-    if (!noteId) {
-      setLoading(false)
-      return
+    if (noteId) {
+      loadCurrentNote(noteId)
     }
-    noteApi
-      .getNote(noteId)
-      .then((data) => {
-        setNote(data)
-        setLoading(false)
-      })
-      .catch((error) => {
-        if (error.response) {
-          const { status, data } = error.response
-          httpErrorHandler({
-            statusCode: status,
-            errorObject: data as ApiError,
-            context: { setIsAuthenticated }
-          })
-          setError(data.error.message)
-          setLoading(false)
-        }
-      })
   }, [noteId])
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
-      {isDialogVisible && <NoteInfoDialog note={note} onClose={() => setIsDialogVisible(false)} />}
+      {isDialogVisible && <NoteInfoDialog note={currentNote!} onClose={() => setIsDialogVisible(false)} />}
 
       {noteId && (
         <AppBar position='sticky' elevation={0}>
           <Toolbar variant='dense'>
             {isMobile ? (
-              <IconButton edge='start' color='inherit' aria-label='menu' sx={{ mr: 2 }} onClick={handleBack}>
+              <IconButton edge='start' color='inherit' aria-label='menu' sx={{ mr: 2 }} onClick={handleAppBarBack}>
                 <ArrowBackIcon />
               </IconButton>
             ) : (
@@ -88,12 +95,47 @@ export default function NoteDetail({ noteId, isNoteListVisible, onNoteListToggle
             <Box sx={{ flexGrow: 1 }} />
             {noteLoaded && (
               <>
+                {syncError && !noteSyncing && (
+                  <Box gap={1} sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                    <Typography sx={{ fontSize: 13 }}>{syncError}</Typography>
+                    <CloudOffOutlinedIcon />
+                  </Box>
+                )}
+                {noteSyncing ? (
+                  <CircularProgress sx={{ color: 'white', mr: 1 }} size={20} />
+                ) : (
+                  !syncError && (
+                    <Box gap={1} sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                      <Typography sx={{ fontSize: 13 }}>
+                        {format(currentNote.updatedAt, 'MMM d, yyyy, h:mm:ss.SSS a')}
+                      </Typography>
+                      <CloudDoneOutlinedIcon />
+                    </Box>
+                  )
+                )}
                 <IconButton color='inherit' edge='end' sx={{ mr: 0.75 }} onClick={() => setIsDialogVisible(true)}>
                   <InfoIcon />
                 </IconButton>
-                <IconButton color='inherit' edge='end'>
+                <IconButton color='inherit' edge='end' onClick={handleMenuClick}>
                   <ExpandCircleDownIcon />
                 </IconButton>
+                <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
+                  <MenuItem>
+                    <ListItemText sx={{ pr: 4 }}>Pin to top</ListItemText>
+                    <Checkbox />
+                  </MenuItem>
+                  <MenuItem disabled>History</MenuItem>
+                  <Divider />
+                  <MenuItem disabled>
+                    <ListItemText>Publish</ListItemText>
+                    <Checkbox />
+                  </MenuItem>
+                  <MenuItem disabled>Copy link</MenuItem>
+                  <Divider />
+                  <MenuItem onClick={handleNoteDelete} sx={{ color: 'error.main' }}>
+                    Move to trash
+                  </MenuItem>
+                </Menu>
               </>
             )}
           </Toolbar>
@@ -127,25 +169,26 @@ export default function NoteDetail({ noteId, isNoteListVisible, onNoteListToggle
             }}
           >
             {!noteId && <Typography color='text.secondary'>Select a note to view</Typography>}
-            {loading && <Typography color='text.secondary'>Loading...</Typography>}
-            {error && <Typography color='text.secondary'>{error}</Typography>}
+            {detailLoading && <Typography color='text.secondary'>Loading...</Typography>}
+            {detailError && <Typography color='text.secondary'>{detailError}</Typography>}
           </Box>
         ) : (
           <Box>
             <NoStyledTextField
               placeholder='Put a note title...'
-              value={note.title}
+              value={currentNote.title}
               onValueChange={(val) => {
-                setNote((prev) => ({ ...prev, title: val }))
+                updateCurrentNote({ title: val })
               }}
               sx={{ typography: 'h5' }}
             />
+            <Divider sx={{mt: 1, mb: 1}}/>
             <NoStyledTextField
               multiline
               placeholder='Write some content...'
-              value={note.content}
+              value={currentNote.content}
               onValueChange={(val) => {
-                setNote((prev) => ({ ...prev, content: val }))
+                updateCurrentNote({ content: val })
               }}
             />
           </Box>

@@ -26,20 +26,19 @@ export class NoteService extends BaseService {
         userObj: AccessJwtPayload
     ): Promise<NoteDetailRespDto> {
         const entityData = { ...dto, userId: userObj.sub }
+        let result
         if (!dto.id) {
-            entityData.id = uuidv4()
-            await this.prisma.note.create({ data: entityData })
+            result = await this.prisma.note.create({ data: {...entityData, id: uuidv4()} })
         } else {
             if (!(await this.noteExisted(entityData.id!, entityData.userId))) {
                 throw new NotFoundError('Requested note not found!')
             }
-            await this.prisma.note.update({
+            result = await this.prisma.note.update({
                 where: { id: entityData.id },
                 data: entityData,
             })
         }
-        const result = plainToClass(NoteDetailRespDto, entityData)
-        return result
+        return plainToClass(NoteDetailRespDto, result);
     }
 
     async getNotes(

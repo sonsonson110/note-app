@@ -1,16 +1,18 @@
 import {
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableRow
-} from '@mui/material';
-import { NoteDetailRespDto } from '../../../services/note/dto/noteDetailRespDto';
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow
+} from '@mui/material'
+import { format } from 'date-fns'
+
+import { NoteDetailRespDto } from '../../../services/note/dto/noteDetailRespDto'
 
 export default function NoteInfoDialog({ note, onClose }: { note: NoteDetailRespDto; onClose: () => void }) {
   function createData(field: string, data: any) {
@@ -18,8 +20,8 @@ export default function NoteInfoDialog({ note, onClose }: { note: NoteDetailResp
   }
 
   const rows = [
-    createData('Modified', note.updatedAt),
-    createData('Created', note.createdAt),
+    createData('Modified', format(note.updatedAt, 'MMM d, yyyy, h:mm a')),
+    createData('Created', format(note.createdAt, 'MMM d, yyyy, h:mm a')),
     createData('Words', note.content.trim().split(/\s+/).length),
     createData('Charaters', note.content.trim().length),
     createData('Version', note.version)
@@ -28,7 +30,7 @@ export default function NoteInfoDialog({ note, onClose }: { note: NoteDetailResp
   return (
     <Dialog open onClose={onClose} aria-labelledby='alert-dialog-title' aria-describedby='alert-dialog-description'>
       <DialogTitle id='alert-dialog-title'>{'Document'}</DialogTitle>
-      <DialogContent sx={{p: 1}}>
+      <DialogContent sx={{ p: 1 }}>
         <TableContainer>
           <Table aria-label='document infomation' size='small'>
             <TableBody>

@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from 'express'
 import { UpsertNoteReqDto } from '../dtos/note/upsert-note-req.dto'
 import { PageOptionsDto } from '../dtos/common/page-options.dto'
 import { plainToInstance } from 'class-transformer'
+import { NotFoundError } from '../types/errors.type'
 
 export class NoteController {
     constructor(private readonly noteService: NoteService) {}
@@ -39,7 +40,7 @@ export class NoteController {
 
     async getNote(req: Request, resp: Response, next: NextFunction) {
         try {
-            const {noteId} = req.params
+            const { noteId } = req.params
             const result = await this.noteService.getNote(noteId, req.user!)
             resp.status(200).json(result)
         } catch (error) {

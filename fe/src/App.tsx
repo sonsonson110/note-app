@@ -5,6 +5,7 @@ import { PublicRoute } from './components/PublicRoute'
 import { AuthProvider } from './context/AuthContext'
 import LoginPage from './features/Login/LoginPage'
 import SignupPage from './features/Signup/SignupPage'
+import { NoteProvider } from './context/NoteContext'
 
 function App() {
   return (
@@ -13,7 +14,14 @@ function App() {
         <Routes>
           {/* Protected routes */}
           <Route element={<ProtectedRoute />}>
-            <Route path='/notes' element={<NoteLayout />}>
+            <Route
+              path='/notes'
+              element={
+                <NoteProvider>
+                  <NoteLayout />
+                </NoteProvider>
+              }
+            >
               <Route path=':noteId' element={<NoteLayout />} />
             </Route>
             <Route path='/' element={<Navigate to='/notes' replace />} />

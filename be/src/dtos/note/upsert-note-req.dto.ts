@@ -7,11 +7,13 @@ export class UpsertNoteReqDto {
     @IsUUID()
     id?: string
 
+    @IsOptional()
     @IsString()
     @Expose()
     @MaxLength(300)
     title: string = ''
 
+    @IsOptional()
     @IsString()
     @Expose()
     content: string = ''

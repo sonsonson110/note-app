@@ -1,15 +1,11 @@
+import { Search } from '@mui/icons-material'
 import { Box, Divider, List, ListItem, ListItemButton, ListItemText, Typography } from '@mui/material'
-import { memo, useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import MainAppBar from '../../components/MainAppBar'
-import { useAuth } from '../../context/AuthContext'
-import { httpErrorHandler } from '../../handlers/httpErrorHandler'
-import { NoteListItemDto } from '../../services/note/dto/noteListItemDto'
-import { noteApi } from '../../services/note/noteApi'
-import { ApiError } from '../../types/apiError'
-import { PageMetaDto } from '../../types/pageDto'
 import NoStyledTextField from '../../components/NoStyledTextField'
-import { Search } from '@mui/icons-material'
+import { useNotes } from '../../context/NoteContext'
+import { NoteListItemDto } from '../../services/note/dto/noteListItemDto'
 
 interface NoteItemProps {
   item: NoteListItemDto
@@ -19,7 +15,7 @@ interface NoteItemProps {
 
 const NoteItem = memo(({ item, isSelected, onNoteClick }: NoteItemProps) => (
   <>
-    <ListItem disablePadding sx={{ height: '56px' }}>
+    <ListItem disablePadding>
       <ListItemButton sx={{ height: '100%' }} onClick={() => onNoteClick(item.id)}>
         <ListItemText
           primary={item.title || 'Untitled'}
@@ -48,46 +44,26 @@ const NoteItem = memo(({ item, isSelected, onNoteClick }: NoteItemProps) => (
 NoteItem.displayName = 'NoteItem'
 
 export function NoteList({}) {
-  const [loading, setLoading] = useState(false)
-  const [searchText, setSearchText] = useState('')
-  const [noteListItems, setNoteListItem] = useState<NoteListItemDto[]>([])
-  const [error, setError] = useState('')
-  const pageMetaRef = useRef<PageMetaDto>(null)
+  const { notes, listLoading, listError, loadNotes, insertNote } = useNotes()
 
-  const { setIsAuthenticated } = useAuth()
+  const [searchText, setSearchText] = useState('')
+
   const navigate = useNavigate()
   const { noteId } = useParams()
 
-  async function loadData() {
-    try {
-      setLoading(true)
-      setError('')
-      const { items, meta } = await noteApi.getNotes()
-      setNoteListItem(items)
-      pageMetaRef.current = meta
-    } catch (error: any) {
-      if (error.response) {
-        const { status, data } = error.response
-        httpErrorHandler({
-          statusCode: status,
-          errorObject: data as ApiError,
-          context: { setIsAuthenticated }
-        })
-        setError(data.message)
-      } else {
-        setError('Failed to load notes')
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
-    loadData()
+    loadNotes()
   }, [])
 
   const handleNoteClick = (noteId: string) => {
     navigate(`/notes/${noteId}`)
+  }
+
+  const handleNoteInsert = async () => {
+    const newNoteId = await insertNote()
+    if (newNoteId) {
+      navigate(`/notes/${newNoteId}`)
+    }
   }
 
   return (
@@ -100,9 +76,8 @@ export function NoteList({}) {
         borderColor: 'divider'
       }}
     >
-      <MainAppBar />
-      {error && <Typography sx={{ p: 2, color: 'error.main' }}>{error}</Typography>}
-      {loading ? (
+      <MainAppBar onNoteInsert={handleNoteInsert} />
+      {listLoading ? (
         <Typography sx={{ p: 1 }}>Loading...</Typography>
       ) : (
         <Box
@@ -123,6 +98,8 @@ export function NoteList({}) {
             sx={{ typography: 'body2' }}
             leadingIcon={Search}
           />
+          {listError && <Typography sx={{ p: 2, color: 'error.main' }}>{listError}</Typography>}
+
           <List
             sx={{
               flexGrow: 1,
@@ -140,7 +117,7 @@ export function NoteList({}) {
               }
             }}
           >
-            {noteListItems.map((item) => (
+            {notes.map((item) => (
               <NoteItem
                 key={item.id}
                 item={item}
