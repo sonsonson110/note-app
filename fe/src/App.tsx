@@ -1,16 +1,19 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
 import NoteLayout from './components/NoteLayout'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { PublicRoute } from './components/PublicRoute'
 import { AuthProvider } from './context/AuthContext'
+import { NoteProvider } from './context/NoteContext'
 import LoginPage from './features/Login/LoginPage'
 import SignupPage from './features/Signup/SignupPage'
-import { NoteProvider } from './context/NoteContext'
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        {/* Root toastify */}
+        <ToastContainer />
         <Routes>
           {/* Protected routes */}
           <Route element={<ProtectedRoute />}>

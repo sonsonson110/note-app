@@ -115,17 +115,17 @@ export function NoteProvider({ children }: { children: ReactNode }) {
       setDetailError('')
       const data = await noteApi.getNote(noteId)
       setCurrentNote(data)
-    } catch (error: any) {
-      if (error.response) {
-        const { status, data } = error.response
+    } catch (error) {
+      if (!(error instanceof AxiosError)) {
+        setDetailError('Something wrong happened')
+      } else {
+        const { status, data } = error.response!
         httpErrorHandler({
           statusCode: status,
           errorObject: data as ApiError,
           context: { setIsAuthenticated }
         })
-        setDetailError(data.message)
-      } else {
-        setDetailError(error.message)
+        setDetailError(data.error.message ?? error.message)
       }
     } finally {
       setDetailLoading(false)

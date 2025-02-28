@@ -1,3 +1,4 @@
+import { Bounce, toast } from 'react-toastify'
 import { ApiError } from '../types/apiError'
 
 export interface HttpErrorHandlerProps {
@@ -8,12 +9,26 @@ export interface HttpErrorHandlerProps {
   context?: { setIsAuthenticated: (value: boolean) => void }
 }
 
+const notifyError = (message: string) => {
+  toast.error(message, {
+    position: 'top-right',
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: false,
+    pauseOnHover: false,
+    draggable: false,
+    progress: undefined,
+    theme: 'light',
+    transition: Bounce
+  })
+}
+
 export const httpErrorHandler = ({
   statusCode,
   errorObject,
   errorKeys,
   setFieldErrors,
-  context,
+  context
 }: HttpErrorHandlerProps): void => {
   interface ErrorCases {
     [key: number]: () => void
@@ -22,24 +37,16 @@ export const httpErrorHandler = ({
 
   const errorCases: ErrorCases = {
     400: () => {
+      notifyError(errorObject.error.message)
       handleBadRequest(errorObject, errorKeys, setFieldErrors)
     },
-    401: () => handleUnauthorized(context),
-    404: () =>
-      console.log({
-        title: 'Not Found',
-        message: 'Requested resource not found'
-      }),
-    500: () =>
-      console.log({
-        title: 'Server Error',
-        message: 'Internal Server Error'
-      }),
-    default: () =>
-      console.log({
-        title: 'Error',
-        message: 'Something went wrong'
-      })
+    401: () => {
+      notifyError(errorObject.error.message)
+      handleUnauthorized(context)
+    },
+    404: () => notifyError(errorObject.error.message),
+    500: () => notifyError(errorObject.error.message),
+    default: () => notifyError('Something went wrong')
   }
 
   const handleCustomError = errorCases[statusCode] || errorCases.default
@@ -64,8 +71,6 @@ const handleBadRequest = (
 }
 
 const handleUnauthorized = (context?: { setIsAuthenticated: (value: boolean) => void }) => {
-  // Show an error toast to notify the user about token expiration
-  // Clear any stored authentication data
   localStorage.removeItem('accessToken')
   // Update the authentication state in the context
   context?.setIsAuthenticated(false)

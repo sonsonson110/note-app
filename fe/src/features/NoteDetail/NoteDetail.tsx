@@ -96,16 +96,16 @@ export default function NoteDetail({ noteId, isNoteListVisible, onNoteListToggle
             {noteLoaded && (
               <>
                 {syncError && !noteSyncing && (
-                  <Box gap={1} sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                  <Box gap={1} sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
                     <Typography sx={{ fontSize: 13 }}>{syncError}</Typography>
                     <CloudOffOutlinedIcon />
                   </Box>
                 )}
                 {noteSyncing ? (
-                  <CircularProgress sx={{ color: 'white', mr: 1 }} size={20} />
+                  <CircularProgress sx={{ color: 'white', mr: 2 }} size={20} />
                 ) : (
                   !syncError && (
-                    <Box gap={1} sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                    <Box gap={1} sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
                       <Typography sx={{ fontSize: 13 }}>
                         {format(currentNote.updatedAt, 'MMM d, yyyy, h:mm:ss.SSS a')}
                       </Typography>
