@@ -119,10 +119,11 @@ export default function NoteDetail({ noteId, isNoteListVisible, onNoteListToggle
                 <IconButton color='inherit' edge='end' onClick={handleMenuClick}>
                   <ExpandCircleDownIcon />
                 </IconButton>
+
                 <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
-                  <MenuItem>
-                    <ListItemText sx={{ pr: 4 }}>Pin to top</ListItemText>
-                    <Checkbox />
+                  <MenuItem onClick={() => updateCurrentNote({ pinned: !currentNote.pinned })}>
+                    <ListItemText sx={{ pr: 4, zIndex: 2 }}>Pin to top</ListItemText>
+                    <Checkbox checked={currentNote.pinned} sx={{ zIndex: 1 }} />
                   </MenuItem>
                   <MenuItem disabled>History</MenuItem>
                   <Divider />
@@ -182,7 +183,7 @@ export default function NoteDetail({ noteId, isNoteListVisible, onNoteListToggle
               }}
               sx={{ typography: 'h5' }}
             />
-            <Divider sx={{mt: 1, mb: 1}}/>
+            <Divider sx={{ mt: 1, mb: 1 }} />
             <NoStyledTextField
               multiline
               placeholder='Write some content...'

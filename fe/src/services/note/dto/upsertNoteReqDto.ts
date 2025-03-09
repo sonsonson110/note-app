@@ -4,4 +4,5 @@ export interface UpsertNoteReqDto {
     content?: string
     isPublic?: boolean,
     version?: number
+    pinned?: boolean
 }

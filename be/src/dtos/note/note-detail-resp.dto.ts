@@ -6,4 +6,5 @@ export class NoteDetailRespDto {
     version!: number
     createdAt!: Date
     updatedAt!: Date
+    pinned: boolean = false
 }

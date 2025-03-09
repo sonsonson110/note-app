@@ -1,5 +1,5 @@
 import {BaseService} from "./abstractions/base.service";
-import {RegisterReqDto} from "../dtos/auth/register-req.dto";
+import {SignupReqDto} from "../dtos/auth/signup-req.dto";
 import {Prisma} from "@prisma/client";
 import {ServiceError, ValidationError} from "../types/errors.type";
 import {PasswordHashHelper} from "../utils/password-hash-helper.util";
@@ -12,7 +12,7 @@ export class UserService extends BaseService {
         this.passwordHashHelper = new PasswordHashHelper()
     }
 
-    async register(dto: RegisterReqDto) {
+    async signup(dto: SignupReqDto) {
         // Check for duplicate email or username
         const conditions: Prisma.UserWhereInput[] = []
         conditions.push({username: {equals: dto.username, mode: 'insensitive'}})

@@ -5,13 +5,14 @@ import { httpErrorHandler } from '../../../handlers/httpErrorHandler'
 import { userApi } from '../../../services/user/userApi'
 import { ApiError } from '../../../types/apiError'
 import { VALIDATION } from '../constants'
+import { SignupUserDto } from '../../../services/user/dto/signupUserDto'
 
 export function useSignupForm() {
   const navigate = useNavigate()
 
   const [formData, setFormData] = useState<SignupFormData>({
     username: '',
-    password: ''
+    password: '',
   })
   const [loading, setLoading] = useState(false)
 
@@ -59,7 +60,13 @@ export function useSignupForm() {
     if (validateForm()) {
       try {
         setLoading(true)
-        await userApi.signup({ ...formData })
+        const dto: SignupUserDto = {
+          username: formData.username,
+          password: formData.password,
+          email: formData.email?.trim() ?? null
+        }
+        debugger
+        await userApi.signup(dto)
         navigate('/login')
       } catch (error: any) {
         if (error.response) {

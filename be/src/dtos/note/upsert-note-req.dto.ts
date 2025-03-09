@@ -1,5 +1,13 @@
-import { Expose } from "class-transformer";
-import {IsBoolean, IsInt, IsOptional, IsString, IsUUID, MaxLength, Min} from "class-validator";
+import { Expose } from 'class-transformer'
+import {
+    IsBoolean,
+    IsInt,
+    IsOptional,
+    IsString,
+    IsUUID,
+    MaxLength,
+    Min,
+} from 'class-validator'
 
 export class UpsertNoteReqDto {
     @Expose()
@@ -28,4 +36,9 @@ export class UpsertNoteReqDto {
     @IsInt()
     @Min(1)
     version: number = 1
+
+    @IsOptional()
+    @Expose()
+    @IsBoolean()
+    pinned: boolean = false
 }

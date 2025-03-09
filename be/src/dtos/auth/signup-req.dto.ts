@@ -1,6 +1,6 @@
 import {IsEmail, IsOptional, IsString, MaxLength, MinLength} from "class-validator";
 
-export class RegisterReqDto {
+export class SignupReqDto {
     @IsString()
     @MinLength(6)
     @MaxLength(30)

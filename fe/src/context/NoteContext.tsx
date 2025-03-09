@@ -42,7 +42,8 @@ export function NoteProvider({ children }: { children: ReactNode }) {
     isPublic: false,
     version: 1,
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
+    pinned: false
   })
 
   const { setIsAuthenticated } = useAuth()
@@ -51,8 +52,11 @@ export function NoteProvider({ children }: { children: ReactNode }) {
     try {
       setListLoading(true)
       setListError('')
-      const { items } = await noteApi.getNotes()
-      setNotes(items)
+      const normalNotesCall = noteApi.getNotes()
+      const pinnedNotesCall = noteApi.getNotes({pinned: true})
+      const [normalNotes, pinnedNotes] = await Promise.all([normalNotesCall, pinnedNotesCall])
+      setNotes([...pinnedNotes.items, ...normalNotes.items])
+      // TODO: Set page metadata
     } catch (error) {
       if (!(error instanceof AxiosError)) {
         setListError('Something wrong happened')
@@ -135,7 +139,7 @@ export function NoteProvider({ children }: { children: ReactNode }) {
   const saveNote = async (req: UpsertNoteReqDto) => {
     try {
       const data = await noteApi.upsertNote(req)
-      setCurrentNote((prev) => ({ ...prev, updatedAt: data.updatedAt }))
+      setCurrentNote((prev) => ({ ...prev, ...data }))
     } catch (error) {
       if (!(error instanceof AxiosError)) {
         setSyncError('Something wrong happened')
@@ -156,16 +160,17 @@ export function NoteProvider({ children }: { children: ReactNode }) {
   const debouncedSave = useCallback(
     debounce(async (req: UpsertNoteReqDto) => {
       await saveNote(req)
-    }, 1500),
+    }, 700),
     []
   )
 
   const updateCurrentNote = (note: Partial<NoteDetailRespDto>) => {
-    setCurrentNote((prev) => ({ ...prev, ...note }))
+    const newNote = { ...currentNote, ...note }
+    setCurrentNote(newNote)
     // Set syncing status immediately
     setNoteSyncing(true)
     // also update the note list item title and content to reflect changes
-    if (note.title || note.content) {
+    if ('title' in note || 'content' in note) {
       setNotes((prevNotes) => {
         const noteIndex = prevNotes.findIndex((listItem) => listItem.id === currentNote.id)
         if (noteIndex === -1) return prevNotes
@@ -174,13 +179,15 @@ export function NoteProvider({ children }: { children: ReactNode }) {
         const updatedNotes = prevNotes.filter((note) => note.id !== updatedNote.id)
 
         // Update title if provided
-        if (note.title) {
-          updatedNote.title = note.title
+        if ('title' in note) {
+          updatedNote.title = note.title ?? 'Untitled'
         }
 
         // Update content if provided
-        if (note.content) {
-          updatedNote.content = note.content.length >= 100 ? note.content.substring(0, 100) + '...' : note.content
+        if ('content' in note) {
+          if (note.content)
+            updatedNote.content = note.content.length >= 100 ? note.content.substring(0, 100) + '...' : note.content
+          else updatedNote.content = ''
         }
 
         // Add it to the beginning of the array
@@ -189,7 +196,7 @@ export function NoteProvider({ children }: { children: ReactNode }) {
         return updatedNotes
       })
     }
-    debouncedSave(currentNote)
+    debouncedSave(newNote)
   }
 
   const value = {

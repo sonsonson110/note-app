@@ -13,4 +13,5 @@ export class NoteListItemDto {
     content!: string
     createdAt!: Date
     updatedAt!: Date
+    pinned: boolean = false
 }

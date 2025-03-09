@@ -4,6 +4,8 @@ import { UpsertNoteReqDto } from '../dtos/note/upsert-note-req.dto'
 import { PageOptionsDto } from '../dtos/common/page-options.dto'
 import { plainToInstance } from 'class-transformer'
 import { NotFoundError } from '../types/errors.type'
+import { NoteListRespDto } from '../dtos/note/note-list-resp.dto'
+import { NoteListReqDto } from '../dtos/note/note-list-req.dto'
 
 export class NoteController {
     constructor(private readonly noteService: NoteService) {}
@@ -28,7 +30,7 @@ export class NoteController {
 
     async getNotes(req: Request, resp: Response, next: NextFunction) {
         try {
-            const options = plainToInstance(PageOptionsDto, req.query, {
+            const options = plainToInstance(NoteListReqDto, req.query, {
                 enableImplicitConversion: true,
             })
             const result = await this.noteService.getNotes(options, req.user!)
