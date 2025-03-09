@@ -22,8 +22,7 @@ export default function NoteInfoDialog({ note, onClose }: { note: NoteDetailResp
   const rows = [
     createData('Modified', format(note.updatedAt, 'MMM d, yyyy, h:mm a')),
     createData('Created', format(note.createdAt, 'MMM d, yyyy, h:mm a')),
-    createData('Words', note.content.trim().split(/\s+/).length),
-    createData('Charaters', note.content.trim().length),
+    createData('Characters', note.content.trim().length),
     createData('Version', note.version)
   ]
 

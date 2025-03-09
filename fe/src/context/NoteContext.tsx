@@ -53,7 +53,7 @@ export function NoteProvider({ children }: { children: ReactNode }) {
       setListLoading(true)
       setListError('')
       const normalNotesCall = noteApi.getNotes()
-      const pinnedNotesCall = noteApi.getNotes({pinned: true})
+      const pinnedNotesCall = noteApi.getNotes({ pinned: true })
       const [normalNotes, pinnedNotes] = await Promise.all([normalNotesCall, pinnedNotesCall])
       setNotes([...pinnedNotes.items, ...normalNotes.items])
       // TODO: Set page metadata
@@ -77,7 +77,20 @@ export function NoteProvider({ children }: { children: ReactNode }) {
   const insertNote = async () => {
     try {
       const newNoteListItem = await noteApi.upsertNote({})
-      setNotes((prev) => [newNoteListItem, ...prev])
+      setNotes((prev) => {
+        // Find first unpinned note
+        const newNotes = [...prev]
+        const firstUnpinnedIndex = prev.findIndex((note) => !note.pinned)
+
+        if (firstUnpinnedIndex === -1) {
+          // No unpinned notes, add to the end
+          newNotes.push(newNoteListItem)
+        } else {
+          // Insert right after the last pinned note
+          newNotes.splice(firstUnpinnedIndex, 0, newNoteListItem)
+        }
+        return newNotes
+      })
       return newNoteListItem.id
     } catch (error: any) {
       if (!(error instanceof AxiosError)) {
@@ -169,13 +182,15 @@ export function NoteProvider({ children }: { children: ReactNode }) {
     setCurrentNote(newNote)
     // Set syncing status immediately
     setNoteSyncing(true)
-    // also update the note list item title and content to reflect changes
-    if ('title' in note || 'content' in note) {
+    // Update the note in the notes list
+    if ('title' in note || 'content' in note || 'pinned' in note) {
       setNotes((prevNotes) => {
         const noteIndex = prevNotes.findIndex((listItem) => listItem.id === currentNote.id)
         if (noteIndex === -1) return prevNotes
 
+        // Create a copy of the note to update
         const updatedNote = { ...prevNotes[noteIndex] }
+        // Remove the original note from the array
         const updatedNotes = prevNotes.filter((note) => note.id !== updatedNote.id)
 
         // Update title if provided
@@ -190,12 +205,31 @@ export function NoteProvider({ children }: { children: ReactNode }) {
           else updatedNote.content = ''
         }
 
-        // Add it to the beginning of the array
-        updatedNotes.unshift(updatedNote)
+        // Update pinned status if provided
+        if ('pinned' in note) {
+          updatedNote.pinned = note.pinned!!
+        }
 
+        // Determine where to insert the updated note
+        if (updatedNote.pinned) {
+          // If the note is pinned, add it to the beginning
+          updatedNotes.unshift(updatedNote)
+        } else {
+          // If the note is unpinned, find the position after the last pinned note
+          const firstUnpinnedIndex = updatedNotes.findIndex((note) => !note.pinned)
+
+          if (firstUnpinnedIndex === -1) {
+            // No unpinned notes, add to the end
+            updatedNotes.push(updatedNote)
+          } else {
+            // Insert right after the last pinned note
+            updatedNotes.splice(firstUnpinnedIndex, 0, updatedNote)
+          }
+        }
         return updatedNotes
       })
     }
+
     debouncedSave(newNote)
   }
 
