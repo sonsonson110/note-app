@@ -2,7 +2,8 @@
 node_modules
 *.log
 *.gz
-.env
 
 # ts
 dist
+
+.env.production

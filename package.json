@@ -1,0 +1,20 @@
+{
+  "name": "note-app",
+  "version": "1.0.0",
+  "scripts": {
+    "compose:dev": "docker compose up backend-dev frontend-dev",
+    "compose:prod": "docker compose up backend-prod frontend-prod",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sonsonson110/note-app.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sonsonson110/note-app/issues"
+  },
+  "homepage": "https://github.com/sonsonson110/note-app#readme",
+  "description": ""
+}

@@ -1,6 +1,6 @@
 import { Search } from '@mui/icons-material'
 import PushPinIcon from '@mui/icons-material/PushPin'
-import { Box, Divider, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Typography } from '@mui/material'
+import { Box, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material'
 import { memo, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import MainAppBar from '../../components/MainAppBar'
@@ -19,9 +19,9 @@ const NoteItem = memo(({ item, isSelected, onNoteClick }: NoteItemProps) => (
     <ListItem disablePadding>
       <ListItemButton sx={{ height: '100%' }} onClick={() => onNoteClick(item.id)}>
         {item.pinned && (
-          <ListItemAvatar sx={{ minWidth: 32 }}>
+          <ListItemIcon sx={{ minWidth: 32 }}>
             <PushPinIcon color='primary' fontSize='small' />
-          </ListItemAvatar>
+          </ListItemIcon>
         )}
         <ListItemText
           primary={item.title || 'Untitled'}

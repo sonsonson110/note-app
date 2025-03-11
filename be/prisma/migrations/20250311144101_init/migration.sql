@@ -42,6 +42,8 @@ CREATE TABLE "Note" (
     "version" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "pinned" BOOLEAN NOT NULL DEFAULT false,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
     "userId" TEXT NOT NULL,
 
     CONSTRAINT "Note_pkey" PRIMARY KEY ("id")
