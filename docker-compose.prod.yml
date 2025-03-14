@@ -12,12 +12,10 @@ services:
     env_file:
       - ./be/.env.production
     environment:
-      - DATABASE_URL=postgres://postgres:password@db:5432/note-app?schema=public
+      - DATABASE_URL=postgres://postgres:password@host.docker.internal:5432/note-app?schema=public
       - NODE_ENV=production
-    depends_on:
-      db:
-        condition: service_healthy
-        restart: true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
       interval: 30s
@@ -41,39 +39,9 @@ services:
     env_file:
       - ./fe/.env.production
     depends_on:
-      backend-prod:
-        condition: service_started
+      - backend-prod
     deploy:
       resources:
         limits:
           cpus: '0.3'
           memory: 256M
-
-  db:
-    image: postgres:17.4-alpine3.21
-    container_name: note-app-db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=note-app
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
-      retries: 5
-      start_period: 30s
-      timeout: 10s
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-    # Only expose port locally for debugging; comment out for production
-    # ports:
-    #   - "127.0.0.1:5432:5432"
-
-volumes:
-  postgres_data:
-    driver: local
