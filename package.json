@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "scripts": {
     "compose:dev": "docker compose up backend-dev frontend-dev",
-    "compose:prod": "docker compose up backend-prod frontend-prod",
+    "compose:prod": "docker compose -f docker-compose.prod.yml up -d",
+    "compose:prod:build": "docker compose -f docker-compose.prod.yml build",
+    "compose:prod:down": "docker compose -f docker-compose.prod.yml down",
+    "compose:prod:logs": "docker compose -f docker-compose.prod.yml logs -f",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
