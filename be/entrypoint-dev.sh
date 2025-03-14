@@ -10,7 +10,6 @@ npx prisma migrate dev
 # Generate Prisma client with TypedSQL
 echo "Generating Prisma client with TypedSQL..."
 npx prisma generate
-npx prisma generate --sql
 
 # Start the application
 echo "Starting the application..."
