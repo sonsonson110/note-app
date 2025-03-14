@@ -17,18 +17,12 @@ WORKDIR /app
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package*.json ./
-COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/.env.production ./.env
 
 RUN npm prune --production
 
 # Create an entrypoint script for production
-RUN echo '#!/bin/sh\n\
-echo "Running database migrations..."\n\
-npx prisma migrate deploy\n\
-echo "Starting the application..."\n\
-node dist/index.js' > ./entrypoint-prod.sh \
-&& chmod +x ./entrypoint-prod.sh
+RUN chmod +x ./entrypoint-prod.sh
 
 EXPOSE 8080
 
