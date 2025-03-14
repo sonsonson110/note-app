@@ -6,4 +6,4 @@ node_modules
 # ts
 dist
 
-.env.production
+# .env.production
