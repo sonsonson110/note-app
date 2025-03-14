@@ -11,9 +11,6 @@ services:
       - "8080:8080"
     env_file:
       - ./be/.env.production
-    environment:
-      - DATABASE_URL=postgres://postgres:password@host.docker.internal:5432/note-app?schema=public
-      - NODE_ENV=production
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
