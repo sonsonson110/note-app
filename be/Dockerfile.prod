@@ -7,6 +7,11 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
+
+RUN npx prisma migrate deploy
+RUN npx prisma generate
+RUN npx prisma generate --sql
+
 RUN npm run build
 
 # Production stage
@@ -21,9 +26,6 @@ COPY --from=build /app/.env.production ./.env
 
 RUN npm prune --production
 
-# Create an entrypoint script for production
-RUN chmod +x ./entrypoint-prod.sh
-
 EXPOSE 8080
 
-CMD ["sh", "./entrypoint-prod.sh"]
+CMD ["node", "dist/index.js"]
