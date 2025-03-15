@@ -6,10 +6,11 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# Don't copy .env files initially
-COPY --exclude=*.env . .
-
+COPY . .
+# Explicitly overwrite .env with .env.production
 COPY .env.production ./.env
+# Print for debugging
+RUN cat .env
 
 RUN npx prisma migrate deploy
 RUN npx prisma generate
