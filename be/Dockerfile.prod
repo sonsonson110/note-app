@@ -5,8 +5,6 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN apt-get install python3 -y
-
 RUN npm ci
 
 COPY . .
@@ -15,6 +13,7 @@ COPY .env.production ./.env
 
 RUN npx prisma migrate deploy
 RUN npx prisma generate
+RUN npx prisma generate --sql
 
 RUN npm run build
 
