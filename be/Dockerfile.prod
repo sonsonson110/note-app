@@ -4,6 +4,9 @@ FROM node:22.14-alpine AS build
 WORKDIR /app
 
 COPY package*.json ./
+
+RUN apt-get install python3 -y
+
 RUN npm ci
 
 COPY . .
