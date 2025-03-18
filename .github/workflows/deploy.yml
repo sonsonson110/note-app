@@ -49,15 +49,6 @@ jobs:
           -t ${{ secrets.ACR_LOGIN_SERVER }}/note-app-backend:latest \
           -f ./be/Dockerfile.prod ./be
         docker push ${{ secrets.ACR_LOGIN_SERVER }}/note-app-backend:latest
-    
-    - name: Remove IP from firewall
-      if: always()
-      run: |
-        az postgres flexible-server firewall-rule delete \
-          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-          --name ${{ secrets.AZURE_POSTGRES_SERVER_NAME }} \
-          --rule-name GithubRunner \
-          --yes
 
     - name: Build and push frontend image
       run: |
@@ -92,3 +83,12 @@ jobs:
 
           make pull-deploy
         EOF
+        
+    - name: Remove IP from firewall
+      if: always()
+      run: |
+        az postgres flexible-server firewall-rule delete \
+          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+          --name ${{ secrets.AZURE_POSTGRES_SERVER_NAME }} \
+          --rule-name GithubRunner \
+          --yes

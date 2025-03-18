@@ -1,8 +1,7 @@
 # Development stage
-FROM node:22.14-alpine AS development
+FROM node:22.14-bookworm-slim AS development
 
 WORKDIR /app
-
 
 COPY package*.json ./
 RUN npm install

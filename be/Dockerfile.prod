@@ -1,6 +1,9 @@
 # Build stage (use debian for python3 integrated)
 FROM node:22.14-bookworm-slim AS build
 
+# Install OpenSSL explicitly
+RUN apt-get update -y && apt-get install -y openssl ca-certificates
+
 # Need a live DB connection during build time
 ARG DATABASE_URL
 ENV DATABASE_URL=$DATABASE_URL
