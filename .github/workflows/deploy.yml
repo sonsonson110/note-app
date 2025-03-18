@@ -28,10 +28,10 @@ jobs:
 
     - name: Add IP to firewall
       run: |
-        az postgres server firewall-rule create \
+        az postgres flexible-server firewall-rule create \
           --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-          --server-name ${{ secrets.AZURE_POSTGRES_SERVER_NAME }} \
-          --name GithubRunner \
+          --name ${{ secrets.AZURE_POSTGRES_SERVER_NAME }} \
+          --rule-name GithubRunner \
           --start-ip-address ${{ steps.ip.outputs.ipv4 }} \
           --end-ip-address ${{ steps.ip.outputs.ipv4 }}
 
@@ -53,10 +53,10 @@ jobs:
     - name: Remove IP from firewall
       if: always()
       run: |
-        az postgres server firewall-rule delete \
+        az postgres flexible-server firewall-rule delete \
           --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-          --server-name ${{ secrets.AZURE_POSTGRES_SERVER_NAME }} \
-          --name GithubRunner
+          --name ${{ secrets.AZURE_POSTGRES_SERVER_NAME }} \
+          --rule-name GithubRunner
 
     - name: Build and push frontend image
       run: |
