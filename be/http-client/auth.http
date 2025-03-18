@@ -1,0 +1,61 @@
+### Login with username and password
+POST http://{{host}}/api
+    /auth
+    /login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+> {%
+    client.global.set("accessToken", response.body.accessToken);
+%}
+
+### Refresh jwt using cookie
+POST http://{{host}}/api
+    /auth
+    /refresh
+Content-Type: application/json
+
+> {%
+    client.global.set("accessToken", response.body.accessToken);
+%}
+
+### Logout user
+POST http://{{host}}/api
+    /auth
+    /logout
+Content-Type: application/json
+
+### Change user password
+< {%
+    // Generate random password before request
+    function generateRandomPassword(length = 12) {
+        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+        let password = "";
+        for (let i = 0; i < length; i++) {
+            password += charset.charAt(Math.floor(Math.random() * charset.length));
+        }
+        return password;
+    }
+
+    // Set the new random password as a variable
+    client.global.set("newRandomPassword", generateRandomPassword());
+%}
+
+PUT http://{{host}}/api
+    /auth
+    /password
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "oldPassword": "{{password}}",
+  "newPassword": "{{newRandomPassword}}"
+}
+
+> {%
+    client.global.set("password", client.global.get("newRandomPassword"))
+%}

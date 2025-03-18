@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  backend-dev:
+    build:
+      context: ./be
+      target: development
+    container_name: note-app-backend-dev
+    volumes:
+      - ./be:/app
+      - /app/node_modules
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./be/.env
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://postgres:password@db:5432/note-app?schema=public
+    depends_on:
+      - db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d note-app"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+
+  frontend-dev:
+    build:
+      context: ./fe
+      target: development
+    container_name: note-app-frontend-dev
+    volumes:
+      - ./fe:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./fe/.env.development
+    depends_on:
+      - backend-dev
+  
+  db:
+    image: postgres:17.4-alpine3.21
+    container_name: note-app-db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

@@ -1,0 +1,69 @@
+name: Build and Deploy
+
+# workflow is triggered manually or any new push to main branch
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+          
+    # - name: Install Azure CLI
+    #   run: |
+    #     curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+    #     az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+    
+    - name: Login to ACR
+      uses: azure/docker-login@v2
+      with:
+        login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+    
+    - name: Build and push backend image
+      run: |
+        docker build \
+          --build-arg DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+          -t ${{ secrets.ACR_LOGIN_SERVER }}/note-app-backend:latest \
+          -f ./be/Dockerfile.prod ./be
+        docker push ${{ secrets.ACR_LOGIN_SERVER }}/note-app-backend:latest
+    
+    - name: Build and push frontend image
+      run: |
+        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/note-app-frontend:latest -f ./fe/Dockerfile.prod ./fe
+        docker push ${{ secrets.ACR_LOGIN_SERVER }}/note-app-frontend:latest
+    
+    - name: Deploy to Azure VM
+      env:
+        AZURE_VM_IP: ${{ secrets.AZURE_VM_IP }}
+        AZURE_VM_USER: ${{ secrets.AZURE_VM_USER }}
+        AZURE_VM_SSH_PRIVATE_KEY: ${{ secrets.AZURE_VM_SSH_PRIVATE_KEY }}
+        AZURE_APPLICATION_ID: ${{ secrets.AZURE_APPLICATION_ID }}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      run: |
+        ssh -o StrictHostKeyChecking=no -i private_key ${AZURE_VM_USER}@${AZURE_VM_IP} << EOF
+          az login --service-principal --username ${AZURE_APPLICATION_ID} --password ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID}
+          az acr login --name devopslearningregistry1
+          cd ./note-app
+
+          # Create .env file for docker-compose
+          cat > .env << EOL
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}
+          REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}
+          VITE_API_URL=${{ secrets.VITE_API_URL }}
+          EOL
+
+          make pull-deploy
+        EOF

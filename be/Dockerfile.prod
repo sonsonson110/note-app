@@ -1,0 +1,38 @@
+# Build stage (use debian for python3 integrated)
+FROM node:22.14-bookworm-slim AS build
+
+# Need a live DB connection during build time
+ARG DATABASE_URL
+ENV DATABASE_URL=$DATABASE_URL
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm ci
+
+COPY . .
+# Explicitly overwrite .env with .env.production
+COPY .env.production ./.env
+
+RUN npx prisma migrate deploy
+RUN npx prisma generate
+RUN npx prisma generate --sql
+
+RUN npm run build
+
+# Production stage
+FROM node:22.14-bookworm-slim AS production
+
+WORKDIR /app
+
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/package*.json ./
+COPY --from=build /app/.env ./.env
+
+RUN npm prune --production
+
+EXPOSE 8080
+
+CMD ["node", "dist/index.js"]

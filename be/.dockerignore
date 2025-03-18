@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
+.git
+.gitignore
+README.md
+dist
+build
+.vscode
+coverage
+# Don't ignore environment files
+# .env
+# .env.*

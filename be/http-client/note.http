@@ -1,0 +1,76 @@
+### POST login with username and password
+POST http://{{host}}/api
+    /auth
+    /login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+> {%
+    client.global.set("accessToken", response.body.accessToken);
+%}
+
+### GET user notes
+GET http://{{host}}/api
+    /notes
+    ?page=1
+    &limit=10
+Authorization: Bearer {{accessToken}}
+
+### GET user deleted notes
+GET http://{{host}}/api
+    /notes
+    ?page=1
+    &limit=10
+    &isDeleted=true
+Authorization: Bearer {{accessToken}}
+
+### GET user pinned notes
+GET http://{{host}}/api
+    /notes
+    ?page=1
+    &limit=10
+    &pinned=true
+Authorization: Bearer {{accessToken}}
+
+### GET user note by id
+GET http://{{host}}/api
+    /notes
+    /3f92d760-7978-479d-8c98-aa4bb1668fdd
+Authorization: Bearer {{accessToken}}
+
+### POST add a single note
+POST http://{{host}}/api
+    /notes
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "id": null,
+  "title": "hehe note",
+  "content": "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?"
+}
+
+### POST update a single note
+POST http://{{host}}/api
+    /notes
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "id": "a1b67322-44f9-4077-b631-1a414c5786dc",
+  "title": "note 1",
+  "content": "ngon luôn",
+  "version": 2
+}
+
+### DELETE delete a single note
+DELETE http://{{host}}/api
+    /notes
+    /a1b67322-44f9-4077--1a414c5786dc
+Authorization: Bearer {{accessToken}}
+
+###
