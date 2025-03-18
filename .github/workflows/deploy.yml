@@ -52,7 +52,11 @@ jobs:
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       run: |
-        ssh -o StrictHostKeyChecking=no -i ${AZURE_VM_SSH_PRIVATE_KEY} ${AZURE_VM_USER}@${AZURE_VM_IP} << EOF
+        # Create private key file correctly
+        echo "$AZURE_VM_SSH_PRIVATE_KEY" > private_key
+        chmod 600 private_key
+
+        ssh -o StrictHostKeyChecking=no -i private_key ${AZURE_VM_USER}@${AZURE_VM_IP} << EOF
           az login --service-principal --username ${AZURE_APPLICATION_ID} --password ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID}
           az acr login --name devopslearningregistry1
           cd ./note-app
