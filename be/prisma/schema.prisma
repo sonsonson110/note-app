@@ -7,7 +7,7 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["typedSql"]
-  binaryTargets   = ["debian-openssl-3.0.x", "native"]
+  binaryTargets   = ["debian-openssl-3.0.x", "native", "debian-openssl-1.1.x"]
 }
 
 datasource db {
