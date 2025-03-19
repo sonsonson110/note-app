@@ -66,9 +66,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no  -i private_key ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_IP }} '
 
             # Create/overwrite .env file with required variables
-            cat > ./note-app/.env << EOL
-            ACR_LOGIN_SERVER=${{ secrets.ACR_LOGIN_SERVER }}
-            EOL
+            echo "ACR_LOGIN_SERVER=${{ secrets.ACR_LOGIN_SERVER }}" > ./note-app/.env
 
             az login \
               --service-principal \
