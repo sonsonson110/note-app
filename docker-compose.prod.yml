@@ -9,6 +9,13 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    volumes:
+    - backend_data:/app/data
 
   frontend-prod:
     image: ${ACR_LOGIN_SERVER}/note-app-frontend:latest
@@ -20,3 +27,6 @@ services:
       - ./fe/.env.production
     depends_on:
       - backend-prod
+
+volumes:
+  backend_data:

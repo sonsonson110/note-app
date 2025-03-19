@@ -4,7 +4,7 @@ name: Build and Deploy
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build-and-deploy:
@@ -12,77 +12,76 @@ jobs:
     defaults:
       run:
         shell: bash
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Azure Login
-      uses: Azure/login@v2.2.0
-      with:
-        creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
+      - name: Azure Login
+        uses: Azure/login@v2.2.0
+        with:
+          creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
 
-    - name: Get runner IP
-      id: ip
-      uses: haythem/public-ip@v1.3
+      - name: Get runner IP
+        id: ip
+        uses: haythem/public-ip@v1.3
 
-    - name: Add IP to firewall
-      run: |
-        az postgres flexible-server firewall-rule create \
-          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-          --name ${{ secrets.AZURE_POSTGRES_SERVER_NAME }} \
-          --rule-name GithubRunner \
-          --start-ip-address ${{ steps.ip.outputs.ipv4 }} \
-          --end-ip-address ${{ steps.ip.outputs.ipv4 }}
+      - name: Add IP to firewall
+        run: |
+          az postgres flexible-server firewall-rule create \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --name ${{ secrets.AZURE_POSTGRES_SERVER_NAME }} \
+            --rule-name GithubRunner \
+            --start-ip-address ${{ steps.ip.outputs.ipv4 }} \
+            --end-ip-address ${{ steps.ip.outputs.ipv4 }}
 
-    - name: Login to ACR
-      uses: azure/docker-login@v2
-      with:
-        login-server: ${{ secrets.ACR_LOGIN_SERVER }}
-        username: ${{ secrets.ACR_USERNAME }}
-        password: ${{ secrets.ACR_PASSWORD }}
-    
-    - name: Build and push backend image
-      run: |
-        docker build \
-          --build-arg DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-          --build-arg ACCESS_TOKEN_SECRET="${{ secrets.ACCESS_TOKEN_SECRET }}" \
-          --build-arg REFRESH_TOKEN_SECRET="${{ secrets.REFRESH_TOKEN_SECRET }}" \
-          -t ${{ secrets.ACR_LOGIN_SERVER }}/note-app-backend:latest \
-          -f ./be/Dockerfile.prod ./be
-        docker push ${{ secrets.ACR_LOGIN_SERVER }}/note-app-backend:latest
+      - name: Login to ACR
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
 
-    - name: Build and push frontend image
-      run: |
-        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/note-app-frontend:latest -f ./fe/Dockerfile.prod ./fe
-        docker push ${{ secrets.ACR_LOGIN_SERVER }}/note-app-frontend:latest
-    
-    - name: Deploy to Azure VM
-      run: |
-        # Create private key file
-        echo "${{ secrets.AZURE_VM_SSH_PRIVATE_KEY }}" > private_key
-        chmod 600 private_key
+      - name: Build and push backend image
+        run: |
+          docker build \
+            --build-arg DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+            --build-arg ACCESS_TOKEN_SECRET="${{ secrets.ACCESS_TOKEN_SECRET }}" \
+            --build-arg REFRESH_TOKEN_SECRET="${{ secrets.REFRESH_TOKEN_SECRET }}" \
+            -t ${{ secrets.ACR_LOGIN_SERVER }}/note-app-backend:latest \
+            -f ./be/Dockerfile.prod ./be
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/note-app-backend:latest
 
-        ssh -o StrictHostKeyChecking=no  -i private_key ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_IP }} << EOF
-          az login --service-principal --username ${{ secrets.AZURE_APPLICATION_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-          az acr login --name devopslearningregistry1
+      - name: Build and push frontend image
+        run: |
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/note-app-frontend:latest -f ./fe/Dockerfile.prod ./fe
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/note-app-frontend:latest
 
-          cd ./note-app
-          git pull
+      - name: Deploy to Azure VM
+        run: |
+          # Create private key file
+          echo "${{ secrets.AZURE_VM_SSH_PRIVATE_KEY }}" > private_key
+          chmod 600 private_key
 
-          cat > .env << EOL
-            ACR_LOGIN_SERVER=${{ secrets.ACR_LOGIN_SERVER }}
-            VITE_API_URL=http://note-app.site
-          EOL
+          ssh -o StrictHostKeyChecking=no  -i private_key ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_IP }} '
+            az login \
+              --service-principal \
+              --username ${{ secrets.AZURE_APPLICATION_ID }} \
+              --password ${{ secrets.AZURE_CLIENT_SECRET }} \
+              --tenant ${{ secrets.AZURE_TENANT_ID }} &&
 
-          make pull-deploy
-        EOF
-        
-    - name: Remove IP from firewall
-      if: always()
-      run: |
-        az postgres flexible-server firewall-rule delete \
-          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-          --name ${{ secrets.AZURE_POSTGRES_SERVER_NAME }} \
-          --rule-name GithubRunner \
-          --yes
+            az acr login --name devopslearningregistry1 &&
+
+            cd ./note-app &&
+            git pull  &&
+            make pull-deploy
+            '
+
+      - name: Remove IP from firewall
+        if: always()
+        run: |
+          az postgres flexible-server firewall-rule delete \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --name ${{ secrets.AZURE_POSTGRES_SERVER_NAME }} \
+            --rule-name GithubRunner \
+            --yes
