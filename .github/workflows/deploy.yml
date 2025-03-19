@@ -72,6 +72,7 @@ jobs:
 
           cat > .env << EOL
             ACR_LOGIN_SERVER=${{ secrets.ACR_LOGIN_SERVER }}
+            VITE_API_URL=http://note-app.site
           EOL
 
           make pull-deploy
