@@ -64,15 +64,22 @@ jobs:
           chmod 600 private_key
 
           ssh -o StrictHostKeyChecking=no  -i private_key ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_IP }} '
+
+            # Create/overwrite .env file with required variables
+            cat > ./note-app/.env << EOL
+            ACR_LOGIN_SERVER=${{ secrets.ACR_LOGIN_SERVER }}
+            EOL
+
             az login \
               --service-principal \
               --username ${{ secrets.AZURE_APPLICATION_ID }} \
               --password ${{ secrets.AZURE_CLIENT_SECRET }} \
               --tenant ${{ secrets.AZURE_TENANT_ID }} &&
 
-            az acr login --name devopslearningregistry1 &&
+            az acr login --name ${{ secrets.ACR_LOGIN_SERVER }} &&
 
             cd ./note-app &&
+            make prod-down &&
             git pull  &&
             make pull-deploy
             '
