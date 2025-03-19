@@ -46,6 +46,8 @@ jobs:
       run: |
         docker build \
           --build-arg DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+          --build-arg ACCESS_TOKEN_SECRET="${{ secrets.ACCESS_TOKEN_SECRET }}" \
+          --build-arg REFRESH_TOKEN_SECRET="${{ secrets.REFRESH_TOKEN_SECRET }}" \
           -t ${{ secrets.ACR_LOGIN_SERVER }}/note-app-backend:latest \
           -f ./be/Dockerfile.prod ./be
         docker push ${{ secrets.ACR_LOGIN_SERVER }}/note-app-backend:latest
@@ -65,14 +67,7 @@ jobs:
           az login --service-principal --username ${{ secrets.AZURE_APPLICATION_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
           az acr login --name devopslearningregistry1
           cd ./note-app
-
-          # Create .env file for docker-compose
-          cat > .env << EOL
-          DATABASE_URL=${{ secrets.DATABASE_URL }}
-          ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}
-          REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}
-          EOL
-
+          git pull
           make pull-deploy
         EOF
         
