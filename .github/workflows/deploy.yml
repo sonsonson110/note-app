@@ -46,8 +46,6 @@ jobs:
         run: |
           docker build \
             --build-arg DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-            --build-arg ACCESS_TOKEN_SECRET="${{ secrets.ACCESS_TOKEN_SECRET }}" \
-            --build-arg REFRESH_TOKEN_SECRET="${{ secrets.REFRESH_TOKEN_SECRET }}" \
             -t ${{ secrets.ACR_LOGIN_SERVER }}/note-app-backend:latest \
             -f ./be/Dockerfile.prod ./be
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/note-app-backend:latest
@@ -67,6 +65,8 @@ jobs:
 
             # Create/overwrite .env file with required variables
             echo "ACR_LOGIN_SERVER=${{ secrets.ACR_LOGIN_SERVER }}" > ./note-app/.env
+            echo "ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}" >> ./note-app/.env
+            echo "REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}" >> ./note-app/.env
 
             az login \
               --service-principal \

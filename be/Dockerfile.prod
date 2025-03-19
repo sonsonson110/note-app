@@ -6,12 +6,8 @@ RUN apt-get update -y && apt-get install -y openssl ca-certificates
 
 # Need a live DB connection during build time
 ARG DATABASE_URL
-ARG ACCESS_TOKEN_SECRET
-ARG REFRESH_TOKEN_SECRET
 
 ENV DATABASE_URL=$DATABASE_URL
-ENV ACCESS_TOKEN_SECRET=$ACCESS_TOKEN_SECRET
-ENV REFRESH_TOKEN_SECRET=$REFRESH_TOKEN_SECRET
 
 WORKDIR /app
 
