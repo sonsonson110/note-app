@@ -9,6 +9,3 @@ dist
 build
 .vscode
 coverage
-# Don't ignore environment files
-# .env
-# .env.*
