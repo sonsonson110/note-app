@@ -63,11 +63,17 @@ jobs:
         echo "${{ secrets.AZURE_VM_SSH_PRIVATE_KEY }}" > private_key
         chmod 600 private_key
 
-        ssh -o StrictHostKeyChecking=no -i private_key ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_IP }} << EOF
+        ssh -o StrictHostKeyChecking=no  -i private_key ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_IP }} << EOF
           az login --service-principal --username ${{ secrets.AZURE_APPLICATION_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
           az acr login --name devopslearningregistry1
+
           cd ./note-app
           git pull
+
+          cat > .env << EOL
+            ACR_LOGIN_SERVER=${{ secrets.ACR_LOGIN_SERVER }}
+          EOL
+
           make pull-deploy
         EOF
         
