@@ -67,6 +67,7 @@ jobs:
             echo "ACR_LOGIN_SERVER=${{ secrets.ACR_LOGIN_SERVER }}" > ./note-app/.env
             echo "ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}" >> ./note-app/.env
             echo "REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}" >> ./note-app/.env
+            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> ./note-app/.env
 
             az login \
               --service-principal \
