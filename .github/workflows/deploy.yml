@@ -17,6 +17,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Prevent rate limiting for base images
+      - name: Docker Login
+        uses: docker/login-action@v3.4.0
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          
       - name: Azure Login
         uses: Azure/login@v2.2.0
         with:
