@@ -87,7 +87,7 @@ jobs:
             cd ./note-app &&
             make prod-down &&
             git pull  &&
-            make pull-deploy
+            make prod-deploy
             '
 
       - name: Remove IP from firewall
