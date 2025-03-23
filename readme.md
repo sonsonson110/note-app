@@ -133,6 +133,8 @@ Further reading:
 > - Get one domain name and pointing it to VM public IP
 > - Clone the project
 
+> Replace `your-domain.com` and `your-email@example.com` with your real one
+
 Run the following script
 
 ```bash
@@ -158,9 +160,36 @@ sudo chown -R $USER:$USER ./note-app/ssl
 sudo chmod -R 600 ./note-app/ssl
 ```
 Create renewal script in VM
+```bash
+#!/bin/bash
 
+# Create renewal script
+cat > ~/renew-ssl.sh << 'EOF'
+
+# Stop the containers temporarily to free up port 80
+cd ~/note-app && make prod-down
+
+# Renew the certificate
+sudo certbot renew --quiet
+
+# Copy renewed certificates
+sudo cp /etc/letsencrypt/live/your-domain.com/fullchain.pem ~/note-app/ssl/
+sudo cp /etc/letsencrypt/live/your-domain.com/privkey.pem ~/note-app/ssl/
+sudo chown -R $(whoami):$(whoami) ~/note-app/ssl
+sudo chmod -R 600 ~/note-app/ssl
+
+# Restart the containers
+cd ~/note-app && make prod-deploy
+EOF
+
+# Make the script executable
+chmod +x ~/renew-ssl.sh
+```
 Create cronjob for ssl renewal
-
+```bash
+# Add cron job to run the renewal script twice a month
+(crontab -l 2>/dev/null; echo "0 3 1,15 * * ~/renew-ssl.sh") | crontab -
+```
 # Set up virtual machine networking (Azure Ubuntu 22.04)
 
 ### Azure Network Settings (Network security group)
