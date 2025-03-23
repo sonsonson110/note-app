@@ -10,6 +10,7 @@ import userRoutes from './routes/user.route'
 import authRoutes from './routes/auth.route'
 import notebookRoutes from './routes/notebook.route'
 import noteRoutes from './routes/note.route'
+import { PrismaClient } from '@prisma/client'
 
 dotenv.config()
 
@@ -36,6 +37,24 @@ app.use('/api/users', userRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/notebooks', notebookRoutes)
 app.use('/api/notes', noteRoutes)
+
+app.get('/api/health', async (req, res) => {
+    try {
+        // Check database connectivity
+        await new PrismaClient().$queryRaw`SELECT 1`
+        res.status(200).json({
+            status: 'ok',
+            database: 'connected',
+        })
+    } catch (error) {
+        console.error('Health check failed:', error)
+        res.status(500).json({
+            status: 'error',
+            database: 'disconnected',
+            message: 'Database connection failed',
+        })
+    }
+})
 
 app.use(errorHandler)
 
