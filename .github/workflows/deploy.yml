@@ -76,6 +76,7 @@ jobs:
             echo "REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}" >> ./note-app/.env
             echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> ./note-app/.env
 
+            # Login to azure
             az login \
               --service-principal \
               --username ${{ secrets.AZURE_APPLICATION_ID }} \
