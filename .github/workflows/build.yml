@@ -49,12 +49,14 @@ jobs:
         with:
           creds: '{"clientId":"${{ secrets.AZURE_APPLICATION_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
       
-      # Handle database access through firewall for the backend build
-      - name: Database Access Setup
+      # Add database firewall rule
+      - name: Add Database Firewall Rule
+        id: add-firewall
         uses: ./.github/workflows/db-firewall
         with:
           resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}
           server-name: ${{ secrets.AZURE_POSTGRES_SERVER_NAME }}
+          operation: add
           
       # Build and push backend image
       - name: Build and push backend image
@@ -69,6 +71,16 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BE_IMAGE_NAME }}:latest
           cache-to: type=inline,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BE_IMAGE_NAME }}:latest
 
+      # Remove database firewall rule
+      - name: Remove Database Firewall Rule
+        if: always()
+        uses: ./.github/workflows/db-firewall
+        with:
+          resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          server-name: ${{ secrets.AZURE_POSTGRES_SERVER_NAME }}
+          operation: remove
+          rule-name: ${{ steps.add-firewall.outputs.rule-name }}
+          
       # Build and push frontend image
       - name: Build and push frontend image
         uses: docker/build-push-action@v6.15.0

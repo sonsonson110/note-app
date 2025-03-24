@@ -26,15 +26,13 @@ jobs:
       # Create deployment configuration file
       - name: Create deployment config
         run: |
-          cat <<EOF > deployment.env 
-          ACR_LOGIN_SERVER="${{ secrets.ACR_LOGIN_SERVER }}"
-          ACCESS_TOKEN_SECRET="${{ secrets.ACCESS_TOKEN_SECRET }}"
-          REFRESH_TOKEN_SECRET="${{ secrets.REFRESH_TOKEN_SECRET }}"
-          DATABASE_URL="${{ secrets.DATABASE_URL }}"
-          BE_IMAGE="${{ secrets.ACR_LOGIN_SERVER }}/note-app-backend:${{ github.sha }}"
-          FE_IMAGE="${{ secrets.ACR_LOGIN_SERVER }}/note-app-frontend:${{ github.sha }}"
-          DEPLOY_TIMESTAMP=$(date +%s)
-          EOF
+          echo "ACR_LOGIN_SERVER=\"\${{ secrets.ACR_LOGIN_SERVER }}\"
+          ACCESS_TOKEN_SECRET=\"\${{ secrets.ACCESS_TOKEN_SECRET }}\"
+          REFRESH_TOKEN_SECRET=\"\${{ secrets.REFRESH_TOKEN_SECRET }}\"
+          DATABASE_URL=\"\${{ secrets.DATABASE_URL }}\"
+          BE_IMAGE=\"\${{ secrets.ACR_LOGIN_SERVER }}/note-app-backend:\${{ github.sha }}\"
+          FE_IMAGE=\"\${{ secrets.ACR_LOGIN_SERVER }}/note-app-frontend:\${{ github.sha }}\"
+          DEPLOY_TIMESTAMP=\$(date +%s)" > deployment.env
       
       # Deploy to Azure VM
       - name: Deploy to Azure
