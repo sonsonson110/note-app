@@ -42,6 +42,19 @@ jobs:
           login-server: ${{ secrets.ACR_LOGIN_SERVER }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
+      
+      # Azure login for database firewall management
+      - name: Azure Login
+        uses: Azure/login@v2.2.0
+        with:
+          creds: '{"clientId":"${{ secrets.AZURE_APPLICATION_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
+      
+      # Handle database access through firewall for the backend build
+      - name: Database Access Setup
+        uses: ./.github/workflows/db-firewall
+        with:
+          resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          server-name: ${{ secrets.AZURE_POSTGRES_SERVER_NAME }}
           
       # Build and push backend image
       - name: Build and push backend image
@@ -53,8 +66,8 @@ jobs:
           tags: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BE_IMAGE_NAME }}:latest,${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BE_IMAGE_NAME }}:${{ github.sha }}
           build-args: |
             DATABASE_URL=${{ secrets.DATABASE_URL }}
-          cache-from: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BE_IMAGE_NAME }}:lastest
-          cache-to: type=inline,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BE_IMAGE_NAME }}:lastest
+          cache-from: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BE_IMAGE_NAME }}:latest
+          cache-to: type=inline,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BE_IMAGE_NAME }}:latest
 
       # Build and push frontend image
       - name: Build and push frontend image
@@ -64,8 +77,8 @@ jobs:
           file: ${{ env.FE_DOCKERFILE }}
           push: true
           tags: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FE_IMAGE_NAME }}:latest,${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FE_IMAGE_NAME }}:${{ github.sha }}
-          cache-from: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FE_IMAGE_NAME }}:lastest
-          cache-to: type=inline,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FE_IMAGE_NAME }}:lastest
+          cache-from: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FE_IMAGE_NAME }}:latest
+          cache-to: type=inline,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FE_IMAGE_NAME }}:latest
           
       # Store image info for later jobs
       - name: Save image information

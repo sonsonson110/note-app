@@ -23,13 +23,6 @@ jobs:
         with:
           creds: '{"clientId":"${{ secrets.AZURE_APPLICATION_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
       
-      # Handle database access through firewall
-      - name: Database Access Setup
-        uses: ./.github/actions/db-firewall
-        with:
-          resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}
-          server-name: ${{ secrets.AZURE_POSTGRES_SERVER_NAME }}
-      
       # Create deployment configuration file
       - name: Create deployment config
         run: |
@@ -45,7 +38,7 @@ jobs:
       
       # Deploy to Azure VM
       - name: Deploy to Azure
-        uses: ./.github/actions/vm-deploy
+        uses: ./.github/workflows/vm-deploy
         with:
           vm-ip: ${{ secrets.AZURE_VM_IP }}
           vm-user: ${{ secrets.AZURE_VM_USER }}
