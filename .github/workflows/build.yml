@@ -27,13 +27,9 @@ jobs:
       # Set up Docker Buildx for better caching
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-
-      # Create a builder with a driver that supports cache exporting
-      - name: Create and use builder
-        run: |
-          docker buildx create --name mybuilder --use
-          docker buildx inspect --bootstrap        
-
+        with:
+          driver: docker-container
+          
       # Prevent rate limiting for base images
       - name: Docker Hub Login
         uses: docker/login-action@v3.4.0
