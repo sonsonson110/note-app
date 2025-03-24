@@ -32,7 +32,8 @@ services:
     env_file:
       - ./fe/.env.production
     depends_on:
-      - backend-prod
+      backend-prod:
+        condition: service_healthy
     volumes:
       - ./ssl:/etc/nginx/ssl:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro

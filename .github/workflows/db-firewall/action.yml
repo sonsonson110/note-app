@@ -1,0 +1,60 @@
+name: 'Database Firewall Management'
+description: 'Creates and removes PostgreSQL firewall rules for CI/CD'
+
+inputs:
+  resource-group:
+    description: 'Azure resource group name'
+    required: true
+  server-name:
+    description: 'PostgreSQL server name'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Get runner IP
+      id: ip
+      uses: haythem/public-ip@v1.3
+      
+    - name: Generate rule name
+      id: rule-name
+      shell: bash
+      run: |
+        RULE_NAME="GithubRunner-$(date +%s)"
+        echo "name=$RULE_NAME" >> $GITHUB_OUTPUT
+        
+    - name: Add IP to PostgreSQL firewall
+      id: add-firewall
+      shell: bash
+      run: |
+        echo "Adding IP ${{ steps.ip.outputs.ipv4 }} to firewall with rule ${{ steps.rule-name.outputs.name }}..."
+        
+        az postgres flexible-server firewall-rule create \
+          --resource-group ${{ inputs.resource-group }} \
+          --name ${{ inputs.server-name }} \
+          --rule-name ${{ steps.rule-name.outputs.name }} \
+          --start-ip-address ${{ steps.ip.outputs.ipv4 }} \
+          --end-ip-address ${{ steps.ip.outputs.ipv4 }}
+          
+        if [ $? -ne 0 ]; then
+          echo "Failed to create firewall rule, but continuing..."
+          exit 1
+        fi
+        
+        echo "RULE_NAME=${{ steps.rule-name.outputs.name }}" >> $GITHUB_ENV
+        
+    - name: Remove IP from firewall (cleanup)
+      if: always()
+      shell: bash
+      run: |
+        if [ -n "${{ env.RULE_NAME }}" ]; then
+          echo "Removing firewall rule ${{ env.RULE_NAME }}..."
+          
+          az postgres flexible-server firewall-rule delete \
+            --resource-group ${{ inputs.resource-group }} \
+            --name ${{ inputs.server-name }} \
+            --rule-name ${{ env.RULE_NAME }} \
+            --yes || true
+        else
+          echo "No firewall rule to remove"
+        fi

@@ -1,0 +1,22 @@
+name: Main Build and Deploy Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build Images
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+    with:
+      environment: production
+
+  deploy:
+    name: Deploy to Production
+    needs: build
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit
+    with:
+      environment: production

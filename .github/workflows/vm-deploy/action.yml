@@ -1,0 +1,103 @@
+name: 'Deploy to Azure VM'
+description: 'Deploys application to Azure VM via SSH'
+
+inputs:
+  vm-ip:
+    description: 'Azure VM IP address'
+    required: true
+  vm-user:
+    description: 'Azure VM username'
+    required: true
+  ssh-key:
+    description: 'SSH private key'
+    required: true
+  app-path:
+    description: 'Application path on the VM'
+    required: true
+  azure-client-id:
+    description: 'Azure service principal client ID'
+    required: true
+  azure-client-secret:
+    description: 'Azure service principal client secret'
+    required: true
+  azure-tenant-id:
+    description: 'Azure tenant ID'
+    required: true
+  acr-login-server:
+    description: 'Azure Container Registry login server'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    # Deploy to Azure VM using SSH
+    - name: Deploy to Azure VM
+      id: deploy
+      shell: bash
+      run: |
+        # Create SSH key file
+        echo "${{ inputs.ssh-key }}" > private_key
+        chmod 600 private_key
+        
+        # Create remote directory if it doesn't exist
+        ssh -o StrictHostKeyChecking=no -i private_key ${{ inputs.vm-user }}@${{ inputs.vm-ip }} "mkdir -p ~/${{ inputs.app-path }}"
+    
+    # Copy deployment files to VM
+    - name: Upload deployment files
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ inputs.vm-ip }}
+        username: ${{ inputs.vm-user }}
+        key: ${{ inputs.ssh-key }}
+        source: "deployment.env,docker-compose.prod.yml,Makefile"
+        target: "${{ inputs.app-path }}"
+        overwrite: true
+      
+    # Finalize deployment on VM
+    - name: Finalize deployment
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ inputs.vm-ip }}
+        username: ${{ inputs.vm-user }}
+        key: ${{ inputs.ssh-key }}
+        script: |
+          cd ~/${{ inputs.app-path }}
+          
+          # Backup current deployment
+          if [ -f docker-compose.prod.yml ]; then
+            BACKUP_DIR="../${{ inputs.app-path }}-backup-$(date +%Y%m%d%H%M%S)"
+            echo "Creating backup in $BACKUP_DIR"
+            mkdir -p $BACKUP_DIR
+            cp -r * $BACKUP_DIR/
+          fi
+          
+          # Move deployment env file to proper location
+          mv deployment.env .env
+          
+          # Login to Azure
+          echo "Logging in to Azure..."
+          az login \
+            --service-principal \
+            --username ${{ inputs.azure-client-id }} \
+            --password ${{ inputs.azure-client-secret }} \
+            --tenant ${{ inputs.azure-tenant-id }}
+              
+          echo "Logging in to ACR..."
+          az acr login --name ${{ inputs.acr-login-server }}
+          
+          echo "Stopping current deployment if running..."
+          make prod-down || true
+          
+          echo "Deploying new version..."
+          make prod-deploy
+          
+          # Verify deployment
+          echo "Verifying deployment..."
+          make health-check
+          
+          if [ $? -eq 0 ]; then
+            echo "Deployment successful!"
+          else
+            echo "Deployment verification failed! Consider rollback with: make rollback"
+            exit 1
+          fi
