@@ -6,7 +6,7 @@ on:
       environment:
         required: true
         type: string
-        description: 'Environment to build for production'
+        description: "Environment to build for production"
 
 env:
   BE_IMAGE_NAME: note-app-backend
@@ -19,7 +19,7 @@ jobs:
     name: Build and Push Images
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -34,7 +34,7 @@ jobs:
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      
+
       # Login to Azure Container Registry
       - name: Login to ACR
         uses: azure/docker-login@v2
@@ -42,22 +42,43 @@ jobs:
           login-server: ${{ secrets.ACR_LOGIN_SERVER }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
-      
+
       # Azure login for database firewall management
       - name: Azure Login
         uses: Azure/login@v2.2.0
         with:
           creds: '{"clientId":"${{ secrets.AZURE_APPLICATION_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
-      
+
+      # Get runner IP
+      - name: Get runner IP
+        id: ip
+        uses: haythem/public-ip@v1.3
+
+      # Generate rule name
+      - name: Generate firewall rule name
+        id: rule-name
+        run: |
+          RULE_NAME="GithubRunner-$(date +%s)"
+          echo "name=$RULE_NAME" >> $GITHUB_OUTPUT
+
       # Add database firewall rule
       - name: Add Database Firewall Rule
         id: add-firewall
-        uses: ./.github/workflows/db-firewall
-        with:
-          resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}
-          server-name: ${{ secrets.AZURE_POSTGRES_SERVER_NAME }}
-          operation: add
-          
+        run: |
+          echo "Adding IP ${{ steps.ip.outputs.ipv4 }} to firewall with rule ${{ steps.rule-name.outputs.name }}..."
+
+          az postgres flexible-server firewall-rule create \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --name ${{ secrets.AZURE_POSTGRES_SERVER_NAME }} \
+            --rule-name ${{ steps.rule-name.outputs.name }} \
+            --start-ip-address ${{ steps.ip.outputs.ipv4 }} \
+            --end-ip-address ${{ steps.ip.outputs.ipv4 }}
+            
+          if [ $? -ne 0 ]; then
+            echo "Failed to create firewall rule"
+            exit 1
+          fi
+
       # Build and push backend image
       - name: Build and push backend image
         uses: docker/build-push-action@v6.15.0
@@ -74,12 +95,15 @@ jobs:
       # Remove database firewall rule
       - name: Remove Database Firewall Rule
         if: always()
-        uses: ./.github/workflows/db-firewall
-        with:
-          resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}
-          server-name: ${{ secrets.AZURE_POSTGRES_SERVER_NAME }}
-          operation: remove
-          
+        run: |
+          echo "Removing firewall rule ${{ steps.rule-name.outputs.name }}..."
+
+          az postgres flexible-server firewall-rule delete \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --name ${{ secrets.AZURE_POSTGRES_SERVER_NAME }} \
+            --rule-name ${{ steps.rule-name.outputs.name }} \
+            --yes || true
+
       # Build and push frontend image
       - name: Build and push frontend image
         uses: docker/build-push-action@v6.15.0
@@ -90,7 +114,7 @@ jobs:
           tags: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FE_IMAGE_NAME }}:latest,${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FE_IMAGE_NAME }}:${{ github.sha }}
           cache-from: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FE_IMAGE_NAME }}:latest
           cache-to: type=inline,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FE_IMAGE_NAME }}:latest
-          
+
       # Store image info for later jobs
       - name: Save image information
         id: image-info
