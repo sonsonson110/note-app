@@ -54,15 +54,22 @@ export class NoteService extends BaseService {
                     options.skip,
                     options.limit,
                     options.pinned,
-                    options.isDeleted
+                    options.isDeleted,
+                    options.searchKeyword || ''
                 )
             ),
-            this.prisma.note.count({ where: { userId: userObj.sub } }),
+            this.prisma.note.count({
+                where: {
+                    userId: userObj.sub,
+                    isDeleted: options.isDeleted,
+                    pinned: options.pinned,
+                },
+            }),
         ])
 
         const pagingNotes = rawNotes.map((note) => ({
             id: note.id,
-            title: note.title,
+            title: note.title || '',
             content: note.content ?? '', // Prisma typesql limitation
             createdAt: note.createdAt,
             updatedAt: note.updatedAt,

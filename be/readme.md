@@ -1,4 +1,4 @@
-# NotePro - Advanced Note Taking Application
+# Note - Advanced Note Taking Application
 
 ## Core Features
 1. User Management
@@ -58,46 +58,7 @@ erDiagram
         updated_at TIMESTAMP
     }
 
-    Notebooks {
-        id SERIAL PK
-        user_id INTEGER FK
-        name VARCHAR(100)
-        description TEXT
-        created_at TIMESTAMP
-    }
-
-    Tags {
-        id SERIAL PK
-        name VARCHAR(50)
-        user_id INTEGER FK
-    }
-
-    NotebookNotes {
-        notebook_id INTEGER FK
-        note_id INTEGER FK
-    }
-
-    NoteTags {
-        note_id INTEGER FK
-        tag_id INTEGER FK
-    }
-
-    SharedNotes {
-        note_id INTEGER FK
-        shared_with_user_id INTEGER FK
-        permission VARCHAR(20)
-        shared_at TIMESTAMP
-    }
-
     Users ||--o{ Notes : "creates"
-    Users ||--o{ Notebooks : "owns"
-    Users ||--o{ Tags : "creates"
-    Notes ||--o{ NoteTags : "has"
-    Tags ||--o{ NoteTags : "used_in"
-    Notes ||--o{ SharedNotes : "shared_as"
-    Users ||--o{ SharedNotes : "has_access_to"
-    Notes ||--o{ NotebookNotes : "appears_in"
-    Notebooks ||--o{ NotebookNotes : "contains"
 ```
 
 ## API Endpoints
@@ -110,21 +71,14 @@ POST /api/auth/refresh
 Users:
 POST /api/users
 
-Notebooks:
-GET /api/notebooks
-POST /api/notebooks
-GET /api/notebooks/:id
-PUT /api/notebooks/:id
-DELETE /api/notebooks/:id
-
 Notes:
 GET /api/notes
 POST /api/notes
 GET /api/notes/:id
 DELETE /api/notes/:id
-GET /api/notes/:id/history
-POST /api/notes/:id/share
-GET /api/notes/shared-with-me
+<!-- GET /api/notes/:id/history -->
+<!-- POST /api/notes/:id/share -->
+<!-- GET /api/notes/shared-with-me -->
 
 Tags:
 GET /api/tags

@@ -13,7 +13,7 @@ export interface AccessJwtPayload {
     // Custom claims
     username: string;
     email: string | null;
-    passwordVersion: number
+    version: number
 }
 
 export interface RefreshJwtPayload {
@@ -39,7 +39,7 @@ export class JwtHelper {
         this.issuer = process.env.JWT_ISSUER || "note-app";
     }
 
-    generateAccessToken(user: { id: string; username: string; email: string | null; passwordVersion: number}) {
+    generateAccessToken(user: { id: string; username: string; email: string | null; version: number}) {
         const payload: AccessJwtPayload = {
             iss: this.issuer,
             sub: user.id,

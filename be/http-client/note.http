@@ -20,6 +20,14 @@ GET http://{{host}}/api
     &limit=10
 Authorization: Bearer {{accessToken}}
 
+### GET filter user notes by keyword
+GET http://{{host}}/api
+    /notes
+    ?page=1
+    &limit=10
+    &searchKeyword=eh
+Authorization: Bearer {{accessToken}}
+
 ### GET user deleted notes
 GET http://{{host}}/api
     /notes
@@ -70,7 +78,7 @@ Authorization: Bearer {{accessToken}}
 ### DELETE delete a single note
 DELETE http://{{host}}/api
     /notes
-    /a1b67322-44f9-4077--1a414c5786dc
+    /db40af8e-7190-44f9-ac1a-cbf005ed21d7
 Authorization: Bearer {{accessToken}}
 
 ###

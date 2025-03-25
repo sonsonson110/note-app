@@ -28,9 +28,9 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
         // Check if password has been changed since token was issued (might hit database pretty hard)
         const user = await prisma.user.findFirst({
             where: { id: decoded.sub },
-            select: { passwordVersion: true }
+            select: { version: true }
         });
-        if (!user || user.passwordVersion !== decoded.passwordVersion) {
+        if (!user || user.version !== decoded.version) {
             const error = new UnauthorizedError('Token invalid due to password change')
             next(error)
         }

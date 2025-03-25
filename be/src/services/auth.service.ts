@@ -32,7 +32,7 @@ export class AuthService extends BaseService {
             id: user.id,
             username: user.username,
             email: user.email,
-            passwordVersion: user.passwordVersion
+            version: user.version
         })
         const refreshToken = this.jwtHelper.generateRefreshToken(user.id)
         // Store user's refresh token
@@ -113,7 +113,7 @@ export class AuthService extends BaseService {
             // Update user new password hash
             this.prisma.user.update({
                 where: {id: userObj.sub},
-                data: {passwordHash: newPasswordHash, passwordVersion: { increment: 1 }}
+                data: {passwordHash: newPasswordHash, version: { increment: 1 }}
             }),
             // Keep current session refresh token, revoke others
             this.prisma.refreshToken.updateMany({

@@ -1,7 +1,7 @@
 export class NoteDetailRespDto {
     id!: string
-    title!: string
-    content!: string
+    title!: string | null
+    content!: string | null
     isPublic!: boolean
     version!: number
     createdAt!: Date
