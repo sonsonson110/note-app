@@ -49,7 +49,7 @@ runs:
         host: ${{ inputs.vm-ip }}
         username: ${{ inputs.vm-user }}
         key: ${{ inputs.ssh-key }}
-        source: "deployment.env,docker-compose.prod.yml,Makefile"
+        source: "deployment.env,docker-compose.prod.yml,Makefile,nginx.conf"
         target: "${{ inputs.app-path }}"
         overwrite: true
       

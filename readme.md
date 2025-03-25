@@ -93,7 +93,7 @@ curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 ```
 
 ##### Azure Container Registry
-
+> ACR name is `devopslearningregistry1` in the study case
 ```bash
 az login
 az acr login --name devopslearningregistry1
@@ -116,6 +116,17 @@ List registry repository
 
 ```bash
 az acr repository list --name devopslearningregistry1 --output table
+```
+List image in a repository
+```bash
+az acr repository show -n devopslearningregistry1 --repository note-app-backend
+```
+Delete all images
+```bash
+for repo in $(az acr repository list --name devopslearningregistry1 --output tsv); do
+    echo "Deleting all images from repository: $repo"
+    az acr repository delete --name devopslearningregistry1 --repository $repo --yes
+done
 ```
 
 Further reading:
@@ -161,10 +172,10 @@ sudo chmod -R 600 ./note-app/ssl
 ```
 Create renewal script in VM
 ```bash
-#!/bin/bash
-
 # Create renewal script
 cat > ~/renew-ssl.sh << 'EOF'
+
+#!/bin/bash
 
 # Stop the containers temporarily to free up port 80
 cd ~/note-app && make prod-down
