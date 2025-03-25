@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend-dev:
     build:
@@ -14,15 +12,9 @@ services:
     env_file:
       - ./be/.env
     environment:
-      - NODE_ENV=development
       - DATABASE_URL=postgres://postgres:password@db:5432/note-app?schema=public
     depends_on:
       - db
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d note-app"]
-      interval: 5s
-      timeout: 2s
-      retries: 20
 
   frontend-dev:
     build:
@@ -50,6 +42,11 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d note-app"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
 
 volumes:
   postgres_data:

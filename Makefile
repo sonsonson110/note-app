@@ -1,9 +1,8 @@
 .PHONY: dev dev-down prod-deploy prod-down logs rollback health-check
 
-include .env
+-include .env
 
 # Development environment
-
 dev:
 	docker compose -f docker-compose.yml up -d
 
