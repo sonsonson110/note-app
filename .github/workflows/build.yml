@@ -79,7 +79,6 @@ jobs:
           resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}
           server-name: ${{ secrets.AZURE_POSTGRES_SERVER_NAME }}
           operation: remove
-          rule-name: ${{ steps.add-firewall.outputs.rule-name }}
           
       # Build and push frontend image
       - name: Build and push frontend image
