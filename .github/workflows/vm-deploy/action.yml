@@ -30,17 +30,13 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    # Deploy to Azure VM using SSH
-    - name: Deploy to Azure VM
-      id: deploy
+    # Create SSH key file
+    - name: Prepare SSH key
+      id: prepare-ssh
       shell: bash
       run: |
-        # Create SSH key file
         echo "${{ inputs.ssh-key }}" > private_key
         chmod 600 private_key
-        
-        # Create remote directory if it doesn't exist
-        ssh -o StrictHostKeyChecking=no -i private_key ${{ inputs.vm-user }}@${{ inputs.vm-ip }} "mkdir -p ~/${{ inputs.app-path }}"
     
     # Copy deployment files to VM
     - name: Upload deployment files
@@ -53,9 +49,9 @@ runs:
         target: "${{ inputs.app-path }}"
         overwrite: true
       
-    # Finalize deployment on VM
+    # Finalize deployment on VM using SSH
     - name: Finalize deployment
-      uses: appleboy/scp-action@v0.1.7
+      uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ inputs.vm-ip }}
         username: ${{ inputs.vm-user }}
