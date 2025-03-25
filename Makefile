@@ -19,16 +19,15 @@ prod-deploy:
 prod-down:
 	docker compose -f docker-compose.prod.yml down
 
+health-check:
+	@echo "Checking backend health..."
+	@curl -s http://localhost/api/health || echo "Backend health check failed"
+	@echo "Checking frontend..."
+	@curl -s -I http://localhost | head -n 1 || echo "Frontend check failed"
+
 # View logs
 logs:
 	docker compose -f docker-compose.prod.yml logs -f
-
-# Check health of deployed services
-# health-check:
-# 	@echo "Checking backend health..."
-# 	@curl -s http://localhost:8080/api/health || echo "Backend health check failed"
-# 	@echo "Checking frontend..."
-# 	@curl -s -I http://localhost:80 | head -n 1 || echo "Frontend check failed"
 
 # Rollback to previous deployment (if backup exists)
 rollback:
