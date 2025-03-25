@@ -4,8 +4,6 @@ services:
   backend-prod:
     image: ${ACR_LOGIN_SERVER}/note-app-backend:latest
     container_name: note-app-backend-prod
-    env_file:
-      - ./be/.env.production
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
@@ -29,8 +27,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    env_file:
-      - ./fe/.env.production
     depends_on:
       backend-prod:
         condition: service_healthy
