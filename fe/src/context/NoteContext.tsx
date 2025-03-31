@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useCallback, useContext, useState } from 'react'
+import { createContext, ReactNode, useCallback, useContext, useRef, useState } from 'react'
 import { httpErrorHandler } from '../handlers/httpErrorHandler'
 import { NoteDetailRespDto } from '../services/note/dto/noteDetailRespDto'
 import { NoteListItemDto } from '../services/note/dto/noteListItemDto'
@@ -17,7 +17,7 @@ interface NoteContextType {
   listError: string
   detailError: string
   syncError: string
-  loadNotes: () => Promise<void>
+  loadNotes: (forceRefresh?: boolean) => Promise<void>
   insertNote: () => Promise<string | undefined>
   deleteNote: (noteId: string) => Promise<void>
   currentNote: NoteDetailRespDto
@@ -29,6 +29,7 @@ const NoteContext = createContext<NoteContextType | undefined>(undefined)
 
 export function NoteProvider({ children }: { children: ReactNode }) {
   const [notes, setNotes] = useState<NoteListItemDto[]>([])
+  const notesLoadedRef = useRef(false)
   const [listLoading, setListLoading] = useState(false)
   const [detailLoading, setDetailLoading] = useState(false)
   const [listError, setListError] = useState('')
@@ -48,7 +49,12 @@ export function NoteProvider({ children }: { children: ReactNode }) {
 
   const { setIsAuthenticated } = useAuth()
 
-  const loadNotes = async () => {
+  const loadNotes = async (forceRefresh = false) => {
+    // Skip loading if notes are already loaded and no refresh is requested
+    if (notesLoadedRef.current && !forceRefresh) {
+      return;
+    }
+
     try {
       setListLoading(true)
       setListError('')
@@ -56,6 +62,7 @@ export function NoteProvider({ children }: { children: ReactNode }) {
       const pinnedNotesCall = noteApi.getNotes({ pinned: true })
       const [normalNotes, pinnedNotes] = await Promise.all([normalNotesCall, pinnedNotesCall])
       setNotes([...pinnedNotes.items, ...normalNotes.items])
+      notesLoadedRef.current = true
       // TODO: Set page metadata
     } catch (error) {
       if (!(error instanceof AxiosError)) {

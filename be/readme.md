@@ -58,7 +58,22 @@ erDiagram
         updated_at TIMESTAMP
     }
 
+    Tags {
+        id SERIAL PK
+        name VARCHAR(50)
+        user_id INTEGER FK
+    }
+
+    NoteTags {
+        note_id INTEGER FK
+        tag_id INTEGER FK
+    }
+
     Users ||--o{ Notes : "creates"
+    Users ||--o{ Tags : "creates"
+    Notes ||--o{ NoteTags : "has"
+    Tags ||--o{ NoteTags : "applied to"
+
 ```
 
 ## API Endpoints
@@ -81,9 +96,9 @@ DELETE /api/notes/:id
 <!-- GET /api/notes/shared-with-me -->
 
 Tags:
-GET /api/tags
+GET /api/tags/notes/:noteId
 POST /api/tags
-DELETE /api/tags/:id
+DELETE /api/tags/:tagId/notes/:noteId
 ```
 
 ### Ref

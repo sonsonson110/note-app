@@ -1,4 +1,4 @@
-import { Box, Toolbar, IconButton, Typography, AppBar } from '@mui/material'
+import { Box, Toolbar, IconButton, Typography, AppBar, Tooltip } from '@mui/material'
 import TemporaryDrawer from './TemporaryDrawer'
 import MenuIcon from '@mui/icons-material/Menu'
 import NoteAddIcon from '@mui/icons-material/NoteAdd'
@@ -20,9 +20,11 @@ export default function MainAppBar({ onNoteInsert }: MainAppBarProps) {
           <Typography variant='h6' component='div' sx={{ flexGrow: 1 }}>
             Note App
           </Typography>
-          <IconButton color='inherit' edge='end' onClick={onNoteInsert}>
-            <NoteAddIcon />
-          </IconButton>
+          <Tooltip title="Create a new note">
+            <IconButton color='inherit' edge='end' onClick={onNoteInsert}>
+              <NoteAddIcon />
+            </IconButton>
+          </Tooltip>
         </Toolbar>
 
         <TemporaryDrawer drawerOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />

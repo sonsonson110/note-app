@@ -1,6 +1,6 @@
-import { Search } from '@mui/icons-material'
+import { Refresh, Search } from '@mui/icons-material'
 import PushPinIcon from '@mui/icons-material/PushPin'
-import { Box, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material'
+import { Box, Divider, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Tooltip, Typography } from '@mui/material'
 import { memo, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import MainAppBar from '../../components/MainAppBar'
@@ -50,8 +50,6 @@ const NoteItem = memo(({ item, isSelected, onNoteClick }: NoteItemProps) => (
   </>
 ))
 
-NoteItem.displayName = 'NoteItem'
-
 export function NoteList({}) {
   const { notes, listLoading, listError, loadNotes, insertNote } = useNotes()
 
@@ -73,6 +71,10 @@ export function NoteList({}) {
     if (newNoteId) {
       navigate(`/notes/${newNoteId}`)
     }
+  }
+
+  const handleRefresh = () => {
+    loadNotes(true)
   }
 
   return (
@@ -97,16 +99,35 @@ export function NoteList({}) {
             overflow: 'hidden'
           }}
         >
-          <NoStyledTextField
-            value={searchText}
-            onValueChange={(newValue) => {
-              setSearchText(newValue)
-            }}
-            placeholder='Search all notes'
-            containerSx={{ px: 2, py: 1, borderBottom: 1, borderColor: 'divider' }}
-            sx={{ typography: 'body2' }}
-            leadingIcon={Search}
-          />
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            px: 2, 
+            py: 1, 
+            borderBottom: 1, 
+            borderColor: 'divider' 
+          }}>
+            <NoStyledTextField
+              value={searchText}
+              onValueChange={(newValue) => {
+                setSearchText(newValue)
+              }}
+              placeholder='Search all notes'
+              containerSx={{ flexGrow: 1 }}
+              sx={{ typography: 'body2' }}
+              leadingIcon={Search}
+            />
+            <Tooltip title="Refresh notes">
+              <IconButton 
+                size="small" 
+                onClick={handleRefresh} 
+                sx={{ ml: 1 }}
+                disabled={listLoading}
+              >
+                <Refresh fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
           {listError && <Typography sx={{ p: 2, color: 'error.main' }}>{listError}</Typography>}
 
           <List

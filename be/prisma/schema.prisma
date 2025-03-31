@@ -56,4 +56,14 @@ model Note {
   // Relations
   user      User     @relation(fields: [userId], references: [id])
   userId    String
+  tags      Tag[]
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  // Relations
+  note      Note     @relation(fields: [noteId], references: [id])
+  noteId    String
 }

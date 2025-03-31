@@ -8,8 +8,8 @@ import 'reflect-metadata'
 import { errorHandler } from './middlewares/error-handler.middleware'
 import userRoutes from './routes/user.route'
 import authRoutes from './routes/auth.route'
-import notebookRoutes from './routes/notebook.route'
 import noteRoutes from './routes/note.route'
+import tagRoutes from './routes/tag.route'
 import { PrismaClient } from '@prisma/client'
 
 dotenv.config()
@@ -35,8 +35,8 @@ app.use(express.urlencoded({ limit: '50mb' }))
 
 app.use('/api/users', userRoutes)
 app.use('/api/auth', authRoutes)
-app.use('/api/notebooks', notebookRoutes)
 app.use('/api/notes', noteRoutes)
+app.use('/api/tags', tagRoutes)
 
 app.get('/api/health', async (req, res) => {
     try {

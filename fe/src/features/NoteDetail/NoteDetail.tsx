@@ -24,7 +24,7 @@ import {
   Typography
 } from '@mui/material'
 import { format } from 'date-fns'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { useNavigate } from 'react-router-dom'
 import remarkGfm from 'remark-gfm'
@@ -32,6 +32,7 @@ import NoStyledTextField from '../../components/NoStyledTextField'
 import { useNotes } from '../../context/NoteContext'
 import { useViewport } from '../../hooks/useViewport'
 import NoteInfoDialog from './components/NoteInfoDialog'
+import TagInput from './components/TagInputComponent'
 
 interface NoteDetailProps {
   noteId?: string | null
@@ -82,6 +83,115 @@ export default function NoteDetail({ noteId, isNoteListVisible, onNoteListToggle
     setViewMode(viewMode === 'edit' ? 'preview' : 'edit')
   }
 
+  const markdownOverloadStyle = useMemo(
+    () => ({
+      fontFamily: [
+        '-apple-system',
+        'BlinkMacSystemFont',
+        '"Segoe UI"',
+        'Roboto',
+        '"Helvetica Neue"',
+        'Arial',
+        'sans-serif',
+        '"Apple Color Emoji"',
+        '"Segoe UI Emoji"',
+        '"Segoe UI Symbol"'
+      ].join(','),
+      // Add custom styling for markdown content
+      '& p': {
+        fontSize: '0.875rem',
+        lineHeight: 1.6,
+        marginBottom: '0.75rem'
+      },
+      '& h1': {
+        fontSize: '1.5rem',
+        fontWeight: 500,
+        lineHeight: 1.2,
+        marginBottom: '0.5rem',
+        marginTop: '0.75rem'
+      },
+      '& h2': {
+        fontSize: '1.25rem',
+        fontWeight: 500,
+        lineHeight: 1.3,
+        marginBottom: '0.5rem',
+        marginTop: '0.75rem'
+      },
+      '& h3': {
+        fontSize: '1.1rem',
+        fontWeight: 500,
+        lineHeight: 1.4,
+        marginBottom: '0.5rem',
+        marginTop: '0.75rem'
+      },
+      '& a': {
+        color: 'primary.main',
+        textDecoration: 'none',
+        '&:hover': {
+          textDecoration: 'underline'
+        }
+      },
+      '& ul, & ol': {
+        marginBottom: '0.75rem',
+        paddingLeft: '1.5rem'
+      },
+      '& li': {
+        marginBottom: '0.25rem',
+        fontSize: '0.875rem'
+      },
+      '& code': {
+        fontFamily: 'Consolas, Monaco, monospace',
+        backgroundColor: 'rgba(0, 0, 0, 0.03)',
+        padding: '0.1rem 0.3rem',
+        borderRadius: '2px',
+        fontSize: '0.8rem'
+      },
+      '& pre': {
+        backgroundColor: 'rgba(0, 0, 0, 0.03)',
+        padding: '0.75rem',
+        borderRadius: '3px',
+        overflowX: 'auto',
+        marginBottom: '0.75rem',
+        '& code': {
+          backgroundColor: 'transparent',
+          padding: 0
+        }
+      },
+      '& blockquote': {
+        borderLeft: '3px solid rgba(0, 0, 0, 0.08)',
+        paddingLeft: '0.75rem',
+        margin: '0.75rem 0',
+        color: 'text.secondary',
+        fontSize: '0.875rem'
+      },
+      '& img': {
+        maxWidth: '100%',
+        height: 'auto'
+      },
+      '& hr': {
+        border: 'none',
+        height: '1px',
+        backgroundColor: 'rgba(0, 0, 0, 0.06)',
+        margin: '1rem 0'
+      },
+      '& table': {
+        borderCollapse: 'collapse',
+        width: '100%',
+        marginBottom: '0.75rem',
+        fontSize: '0.875rem'
+      },
+      '& th, & td': {
+        border: '1px solid rgba(0, 0, 0, 0.08)',
+        padding: '0.3rem 0.5rem'
+      },
+      '& th': {
+        backgroundColor: 'rgba(0, 0, 0, 0.02)',
+        fontWeight: 500
+      }
+    }),
+    []
+  )
+
   useEffect(() => {
     if (noteId) {
       loadCurrentNote(noteId)
@@ -118,12 +228,12 @@ export default function NoteDetail({ noteId, isNoteListVisible, onNoteListToggle
                   <CircularProgress sx={{ color: 'white', mr: 2 }} size={20} />
                 ) : (
                   !syncError && (
-                    <Box gap={1} sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-                      <Typography sx={{ fontSize: 13 }}>
-                        {format(currentNote.updatedAt, 'MMM d, yyyy, h:mm:ss.SSS a')}
-                      </Typography>
-                      <CloudDoneOutlinedIcon />
-                    </Box>
+                    <Tooltip title={format(currentNote.updatedAt, 'MMM d, yyyy, h:mm:ss.SSS a')}>
+                      <Box gap={1} sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
+                        <Typography variant='caption'>Saved</Typography>
+                        <CloudDoneOutlinedIcon />
+                      </Box>
+                    </Tooltip>
                   )
                 )}
                 {/* Markdown toggle */}
@@ -219,7 +329,7 @@ export default function NoteDetail({ noteId, isNoteListVisible, onNoteListToggle
             {detailError && <Typography color='text.secondary'>{detailError}</Typography>}
           </Box>
         ) : (
-          <Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <NoStyledTextField
               placeholder='Put a note title...'
               value={currentNote.title}
@@ -228,126 +338,24 @@ export default function NoteDetail({ noteId, isNoteListVisible, onNoteListToggle
               }}
               sx={{ typography: 'h5' }}
             />
-            {viewMode === 'edit' ? (
-              <NoStyledTextField
-                multiline
-                placeholder='Write some content...'
-                value={currentNote.content}
-                onValueChange={(val) => {
-                  updateCurrentNote({ content: val })
-                }}
-              />
-            ) : (
-              <Box
-                sx={{
-                  fontFamily: [
-                    '-apple-system',
-                    'BlinkMacSystemFont',
-                    '"Segoe UI"',
-                    'Roboto',
-                    '"Helvetica Neue"',
-                    'Arial',
-                    'sans-serif',
-                    '"Apple Color Emoji"',
-                    '"Segoe UI Emoji"',
-                    '"Segoe UI Symbol"'
-                  ].join(','),
-                  // Add custom styling for markdown content
-                  '& p': {
-                    fontSize: '0.875rem',
-                    lineHeight: 1.6,
-                    marginBottom: '0.75rem'
-                  },
-                  '& h1': {
-                    fontSize: '1.5rem',
-                    fontWeight: 500,
-                    lineHeight: 1.2,
-                    marginBottom: '0.5rem',
-                    marginTop: '0.75rem'
-                  },
-                  '& h2': {
-                    fontSize: '1.25rem',
-                    fontWeight: 500,
-                    lineHeight: 1.3,
-                    marginBottom: '0.5rem',
-                    marginTop: '0.75rem'
-                  },
-                  '& h3': {
-                    fontSize: '1.1rem',
-                    fontWeight: 500,
-                    lineHeight: 1.4,
-                    marginBottom: '0.5rem',
-                    marginTop: '0.75rem'
-                  },
-                  '& a': {
-                    color: 'primary.main',
-                    textDecoration: 'none',
-                    '&:hover': {
-                      textDecoration: 'underline'
-                    }
-                  },
-                  '& ul, & ol': {
-                    marginBottom: '0.75rem',
-                    paddingLeft: '1.5rem'
-                  },
-                  '& li': {
-                    marginBottom: '0.25rem',
-                    fontSize: '0.875rem'
-                  },
-                  '& code': {
-                    fontFamily: 'Consolas, Monaco, monospace',
-                    backgroundColor: 'rgba(0, 0, 0, 0.03)',
-                    padding: '0.1rem 0.3rem',
-                    borderRadius: '2px',
-                    fontSize: '0.8rem'
-                  },
-                  '& pre': {
-                    backgroundColor: 'rgba(0, 0, 0, 0.03)',
-                    padding: '0.75rem',
-                    borderRadius: '3px',
-                    overflowX: 'auto',
-                    marginBottom: '0.75rem',
-                    '& code': {
-                      backgroundColor: 'transparent',
-                      padding: 0
-                    }
-                  },
-                  '& blockquote': {
-                    borderLeft: '3px solid rgba(0, 0, 0, 0.08)',
-                    paddingLeft: '0.75rem',
-                    margin: '0.75rem 0',
-                    color: 'text.secondary',
-                    fontSize: '0.875rem'
-                  },
-                  '& img': {
-                    maxWidth: '100%',
-                    height: 'auto'
-                  },
-                  '& hr': {
-                    border: 'none',
-                    height: '1px',
-                    backgroundColor: 'rgba(0, 0, 0, 0.06)',
-                    margin: '1rem 0'
-                  },
-                  '& table': {
-                    borderCollapse: 'collapse',
-                    width: '100%',
-                    marginBottom: '0.75rem',
-                    fontSize: '0.875rem'
-                  },
-                  '& th, & td': {
-                    border: '1px solid rgba(0, 0, 0, 0.08)',
-                    padding: '0.3rem 0.5rem'
-                  },
-                  '& th': {
-                    backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                    fontWeight: 500
-                  }
-                }}
-              >
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{currentNote.content}</ReactMarkdown>
-              </Box>
-            )}
+            <Box sx={{ flexGrow: 1 }}>
+              {viewMode === 'edit' ? (
+                <NoStyledTextField
+                  multiline
+                  placeholder='Write some content...'
+                  value={currentNote.content}
+                  onValueChange={(val) => {
+                    updateCurrentNote({ content: val })
+                  }}
+                />
+              ) : (
+                <Box sx={markdownOverloadStyle}>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{currentNote.content}</ReactMarkdown>
+                </Box>
+              )}
+            </Box>
+
+            <TagInput noteId={noteId} />
           </Box>
         )}
       </Box>
